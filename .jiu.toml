@@ -1,0 +1,29 @@
+version = "0.1.0"
+
+[[recipe]]
+name = "build"
+alias = "b"
+description = "Build release binary"
+arguments = []
+command = ["cargo", "build", "--release"]
+
+[[recipe]]
+name = "run"
+alias = "r"
+description = "Compile and run"
+arguments = []
+command = ["cargo", "run", "--", { type = "rest" }]
+
+[[recipe]]
+name = "test"
+alias = "t"
+description = "Run tests"
+arguments = []
+command = ["cargo", "test", { type = "rest" }]
+
+[[recipe]]
+name = "version"
+alias = "v"
+description = "Set or get version"
+arguments = [{ name = "version", type = "optional" }]
+command = ["./scripts/version.sh", { type = "arg", name = "version" }]
