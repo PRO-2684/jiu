@@ -30,11 +30,40 @@ cargo install jiu
 
 ## 💡 Examples
 
-TODO
+See [`.jiu.toml`](./.jiu.toml) for a simple example used in this repository~~, or the [`tests`](./tests) directory for more complex examples~~.
 
 ## 📖 Usage
 
-TODO
+### Configuration
+
+The config file is a simple TOML file named `.jiu.toml`. The format is as follows:
+
+```toml
+version = "0.1.0" # should be exactly 0.1.0
+
+[[recipe]]
+name = "run" # name of the recipe (Required)
+alias = "r" # alias for the recipe (Optional)
+description = "Compile and run" # description of the recipe (Optional)
+arguments = ["*rest"] # arguments to the recipe (Optional)
+command = ["cargo", "run", "--", ["*rest"]] # command to run (Required)
+
+# ...More recipes
+```
+
+#### Arguments
+
+The `arguments` field is a list of arguments that the recipe accepts. It should be a list of strings, where each string represents an argument. An argument is made up of an optional leading symbol and a name. The leading symbol can be one of the following:
+
+- `*`: A variadic argument. This means that the argument can accept zero or more values.
+- `+`: A required variadic argument. This means that the argument must accept one or more values.
+- `?`: An optional argument. This means that the argument can accept zero or one value.
+
+If the leading symbol is omitted, the argument is treated as a required argument.
+
+#### Command
+
+The `command` field is a list made up of strings and arrays that represents the command to run. Each string is treated as a literal string, while each array is treated as a placeholder for the arguments. The placeholders are replaced with the values of the arguments when the command is run.
 
 ## 🤔 Comparison
 
@@ -48,4 +77,4 @@ This tool is heavily inspired by [`just`](https://github.com/casey/just/), but i
 
 ## 🎉 Credits
 
-TODO
+- [`just`] - where the inspiration came from
