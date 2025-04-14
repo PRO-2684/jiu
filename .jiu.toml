@@ -1,24 +1,24 @@
 version = "0.1.0"
 
-[[recipe]]
+[[recipes]]
 names = ["build", "b"]
 description = "Build release binary"
 arguments = []
-command = "cargo build --release"
+command = ["cargo", "build", "--release"]
 
-[[recipe]]
+[[recipes]]
 names = ["run", "r"]
 description = "Compile and run"
 arguments = ["*rest"]
 command = ["cargo", "run", "--", ["*rest"]]
 
-[[recipe]]
+[[recipes]]
 names = ["test", "t"]
 description = "Run tests"
 arguments = ["*rest"]
 command = ["cargo", "test", ["*rest"]]
 
-[[recipe]]
+[[recipes]]
 names = ["version", "v"]
 description = "Set or get version"
 arguments = ["?version"]

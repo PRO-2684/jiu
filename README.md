@@ -39,13 +39,13 @@ See [`.jiu.toml`](./.jiu.toml) for a simple example used in this repository~~, o
 The config file is a simple TOML file named `.jiu.toml`. The format is as follows:
 
 ```toml
-version = "0.1.0" # should be exactly 0.1.0
+default = "run" # Default recipe to run (Optional, lists all recipes if empty)
 
-[[recipe]]
-names = ["run", "r"] # names of the recipe (Required)
-description = "Compile and run" # description of the recipe (Optional)
-arguments = ["*rest"] # arguments to the recipe (Optional)
-command = ["cargo", "run", "--", ["*rest"]] # command to run (Required)
+[[recipes]]
+names = ["run", "r"] # Names of the recipe (Required, must contain at least one name and each name should be unique across all recipes)
+description = "Compile and run" # Description of the recipe (Optional)
+arguments = ["*rest"] # Arguments to the recipe (Optional)
+command = ["cargo", "run", "--", ["*rest"]] # Command to run (Required)
 
 # ...More recipes
 ```
@@ -73,6 +73,10 @@ This tool is heavily inspired by [`just`](https://github.com/casey/just/), but i
     - Although [there are workarounds](https://just.systems/man/en/avoiding-argument-splitting.html), corner cases still exist
 - Pro: Is independent of shell
 - Con: But at the cost of much less customization and features
+
+## ✅ TODO
+
+- `env` field
 
 ## 🎉 Credits
 
