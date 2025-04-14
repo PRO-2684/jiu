@@ -42,8 +42,7 @@ The config file is a simple TOML file named `.jiu.toml`. The format is as follow
 version = "0.1.0" # should be exactly 0.1.0
 
 [[recipe]]
-name = "run" # name of the recipe (Required)
-alias = "r" # alias for the recipe (Optional)
+names = ["run", "r"] # names of the recipe (Required)
 description = "Compile and run" # description of the recipe (Optional)
 arguments = ["*rest"] # arguments to the recipe (Optional)
 command = ["cargo", "run", "--", ["*rest"]] # command to run (Required)
