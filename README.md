@@ -36,6 +36,16 @@ TODO
 
 TODO
 
+## 🤔 Comparison
+
+This tool is heavily inspired by [`just`](https://github.com/casey/just/), but is fundamentally different. To summarize:
+
+- Pro: It handles arguments correctly, and without any ambiguity
+    - `just` could cause argument splitting issues
+    - Although [there are workarounds](https://just.systems/man/en/avoiding-argument-splitting.html), corner cases still exist
+- Pro: Is independent of shell
+- Con: But at the cost of much less customization and features
+
 ## 🎉 Credits
 
 TODO

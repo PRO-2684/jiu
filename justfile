@@ -44,4 +44,3 @@ set-version VERSION:
     git commit -S -m "Bump version to v{{VERSION}}"
     # Tag version
     git tag -s v{{VERSION}} -m "Version v{{VERSION}}"
-
