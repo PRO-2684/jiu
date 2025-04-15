@@ -18,6 +18,9 @@ use std::{
 /// The configuration.
 #[derive(Deserialize, Debug)]
 pub struct Config {
+    /// Description of the configuration.
+    #[serde(default)]
+    pub description: String,
     /// Default recipe to run when invoked without any arguments.
     ///
     /// - List all recipes if empty.
@@ -124,20 +127,20 @@ impl Recipe {
         } = self;
         let names = names.join("/");
         let description = if description.is_empty() {
-            "<No description>"
+            "".to_string()
         } else {
-            description
+            format!(": {description}")
         };
         let arguments: Vec<String> = arguments
             .iter()
             .map(std::string::ToString::to_string)
             .collect();
-        if arguments.is_empty() {
-            format!("{names}: {description}",)
+        let arguments = if arguments.is_empty() {
+            String::new()
         } else {
-            let arguments = &arguments.join(" ");
-            format!("{names} {arguments}: {description}",)
-        }
+            format!(" {}", arguments.join(" "))
+        };
+        format!("{names}{arguments}{description}")
     }
 }
 
@@ -207,6 +210,7 @@ mod tests {
         )
         .unwrap();
 
+        assert_eq!(config.description, "");
         assert_eq!(config.default, "test");
         assert_eq!(config.recipes.len(), 1);
 

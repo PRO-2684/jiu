@@ -1,3 +1,5 @@
+description = "`jiu`: A minimal command runner."
+
 [[recipes]]
 names = ["build", "b"]
 description = "Build release binary"

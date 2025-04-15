@@ -8,8 +8,8 @@ fn main() -> Result<()> {
     // Checking environment
     let debug = env::var("JIU_DEBUG").is_ok();
 
-    // Finding config file
-    let config = find_config_file(debug)?;
+    // Locating and parsing config file
+    let config = locate_config_file(debug)?;
 
     // Collecting arguments
     let mut iter = env::args();
@@ -26,9 +26,12 @@ fn main() -> Result<()> {
         if config.recipes.is_empty() {
             bail!("No recipes found");
         }
+        if !config.description.is_empty() {
+            println!("{}\n", config.description);
+        }
         println!("Available recipes:");
         for recipe in config.recipes {
-            println!("- {recipe}");
+            println!("  {recipe}");
         }
         return Ok(());
     }
@@ -64,12 +67,12 @@ fn main() -> Result<()> {
     std::process::exit(status.code().unwrap_or(1));
 }
 
-/// Search for config file in the current directory and its parents. To be specific:
+/// Locate config file in the current directory and its parents. To be specific:
 ///
 /// 1. Find the closest parent directory that contains a `.jiu.toml` file.
 /// 2. Deserialize the file into a [`Config`] struct.
 /// 3. Set working directory to the directory containing the config file.
-fn find_config_file(debug: bool) -> Result<Config> {
+fn locate_config_file(debug: bool) -> Result<Config> {
     let mut path = env::current_dir()?;
     loop {
         let config_path = path.join(".jiu.toml");

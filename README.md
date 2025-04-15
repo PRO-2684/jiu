@@ -57,6 +57,8 @@ Note that the arguments are all handled correctly.
 The config file is a simple TOML file named `.jiu.toml`. The format is as follows:
 
 ```toml
+description = "`jiu`: A minimal command runner." # Description of the configuration (Optional)
+# - Will be displayed when listing recipes
 default = "run" # Default recipe to run when invoked without any arguments (Optional)
 # - List all recipes if empty
 # - Default recipe must be able to accept no arguments
@@ -141,8 +143,12 @@ This tool is heavily inspired by [`just`](https://github.com/casey/just/), but i
 
 ## ✅ TODO
 
-- Global `description` field
-- `env` field on recipes
+- `env` field on recipes and global
+- Interpreting environment variables in commands (`["$VAR"]`)
+- Set working directories
+    - Where the config file is located (default)
+    - Where the command is invoked
+    - Custom working directory, relative to the config file
 
 ## 🎉 Credits
 
