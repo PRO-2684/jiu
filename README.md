@@ -80,4 +80,4 @@ This tool is heavily inspired by [`just`](https://github.com/casey/just/), but i
 
 ## 🎉 Credits
 
-- [`just`] - where the inspiration came from
+- [`just`](https://github.com/casey/just/) - where the inspiration came from
