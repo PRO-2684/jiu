@@ -7,7 +7,7 @@
 
 mod arguments;
 
-pub use arguments::{ArgumentDefinition, ArgumentType, ResolvedArgument};
+use arguments::{ArgumentDefinition, ResolvedArgument};
 use serde::Deserialize;
 use std::{
     collections::{HashMap, VecDeque},
@@ -37,9 +37,9 @@ pub struct Recipe {
     pub description: String,
     /// Arguments to the recipe.
     #[serde(default)]
-    pub arguments: Vec<ArgumentDefinition>,
+    arguments: Vec<ArgumentDefinition>,
     /// Command to run.
-    pub command: Vec<LitOrArg>,
+    command: Vec<LitOrArg>,
 }
 
 impl Recipe {
@@ -100,7 +100,7 @@ impl Recipe {
 
 /// A string literal or an argument.
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum LitOrArg {
+enum LitOrArg {
     /// A string literal.
     Literal(String),
     /// An argument.
@@ -142,6 +142,7 @@ impl<'de> Deserialize<'de> for LitOrArg {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use arguments::ArgumentType;
 
     #[test]
     fn test_config() {
