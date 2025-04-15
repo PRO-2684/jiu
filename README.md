@@ -123,6 +123,8 @@ This tool is heavily inspired by [`just`](https://github.com/casey/just/), but i
 
 ## ✅ TODO
 
+- Search for config file in parent directories
+- Set working directory to config file location
 - Global `description` field
 - `env` field on recipes
 

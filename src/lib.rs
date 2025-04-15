@@ -10,7 +10,7 @@ mod arguments;
 use anyhow::{Result, bail};
 use arguments::{ArgumentDefinition, ResolvedArgument};
 use serde::Deserialize;
-use std::collections::{HashMap, VecDeque};
+use std::{collections::{HashMap, VecDeque}, fmt::Display};
 
 /// The configuration.
 #[derive(Deserialize, Debug)]
@@ -101,6 +101,42 @@ impl Recipe {
         }
 
         Ok(resolved_command)
+    }
+
+    /// Summarizes the recipe.
+    pub fn summarize(&self) -> String {
+        let Self {
+            names,
+            description,
+            command: _,
+            arguments,
+        } = self;
+        let names = names.join("/");
+        let description = if description.is_empty() {
+            "<No description>"
+        } else {
+            &description
+        };
+        let arguments: Vec<String> = arguments
+            .iter()
+            .map(|arg| arg.to_string())
+            .collect();
+        if arguments.is_empty() {
+            format!(
+                "{names}: {description}",
+            )
+        } else {
+            let arguments = &arguments.join(" ");
+            format!(
+                "{names} {arguments}: {description}",
+            )
+        }
+    }
+}
+
+impl Display for Recipe {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.summarize())
     }
 }
 

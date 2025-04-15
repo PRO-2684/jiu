@@ -25,6 +25,18 @@ fn main() -> Result<()> {
         eprintln!("Received recipe arguments: {args:?}");
     }
 
+    // Listing recipies if the name is empty
+    if recipe_name.is_empty() {
+        if config.recipes.is_empty() {
+            bail!("No recipes found");
+        }
+        println!("Available recipes:");
+        for recipe in config.recipes {
+            println!("- {recipe}");
+        }
+        return Ok(());
+    }
+
     // Finding the recipe
     let Some(recipe) = config
         .recipes

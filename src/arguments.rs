@@ -2,7 +2,7 @@
 
 use anyhow::{bail, Result};
 use serde::Deserialize;
-use std::collections::VecDeque;
+use std::{collections::VecDeque, fmt::Display};
 
 /// A recipe argument defined the configuration file.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -35,6 +35,18 @@ impl<'de> Deserialize<'de> for ArgumentDefinition {
         }
 
         Ok(Self { name, arg_type })
+    }
+}
+
+impl Display for ArgumentDefinition {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let symbol = match self.arg_type {
+            ArgumentType::Required => "",
+            ArgumentType::Optional => "?",
+            ArgumentType::Variadic => "*",
+            ArgumentType::RequiredVariadic => "+",
+        };
+        write!(f, "{}{}", symbol, self.name)
     }
 }
 
