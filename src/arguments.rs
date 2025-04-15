@@ -1,5 +1,6 @@
 //! Module for parsing and resolving recipe arguments.
 
+use anyhow::{bail, Result};
 use serde::Deserialize;
 use std::collections::VecDeque;
 
@@ -52,11 +53,11 @@ pub enum ArgumentType {
 
 impl ArgumentType {
     /// Resolves the argument value.
-    pub fn resolve(&self, args: &mut VecDeque<String>) -> Result<ResolvedArgument, &'static str> {
+    pub fn resolve(&self, args: &mut VecDeque<String>) -> Result<ResolvedArgument> {
         match self {
             Self::Required => {
                 let Some(value) = args.pop_front() else {
-                    return Err("Required argument not provided");
+                    bail!("Required argument not provided");
                 };
                 Ok(ResolvedArgument::Required(value))
             }
@@ -71,7 +72,7 @@ impl ArgumentType {
             }
             Self::RequiredVariadic => {
                 if args.is_empty() {
-                    return Err("Required variadic argument must contain at least one value");
+                    bail!("Required variadic argument must contain at least one value");
                 }
                 // Take all remaining arguments
                 let values: Vec<String> = args.drain(..).collect();
@@ -135,8 +136,8 @@ mod tests {
         assert_eq!(arg, ResolvedArgument::Optional(Some("arg3".to_string())));
         assert_eq!(args, VecDeque::from(vec![]));
 
-        let arg = ArgumentType::Required.resolve(&mut args).unwrap_err();
-        assert_eq!(arg, "Required argument not provided");
+        let err = ArgumentType::Required.resolve(&mut args).unwrap_err();
+        assert_eq!(err.to_string(), "Required argument not provided");
         assert_eq!(args, VecDeque::from(vec![]));
 
         let arg = ArgumentType::Optional.resolve(&mut args).unwrap();
@@ -164,11 +165,11 @@ mod tests {
         );
         assert_eq!(args, VecDeque::from(vec![]));
 
-        let arg = ArgumentType::RequiredVariadic
+        let err = ArgumentType::RequiredVariadic
             .resolve(&mut args)
             .unwrap_err();
         assert_eq!(
-            arg,
+            err.to_string(),
             "Required variadic argument must contain at least one value"
         );
         assert_eq!(args, VecDeque::from(vec![]));

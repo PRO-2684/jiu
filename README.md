@@ -64,6 +64,33 @@ If the leading symbol is omitted, the argument is treated as a required argument
 
 The `command` field is a list made up of strings and arrays that represents the command to run. Each string is treated as a literal string, while each array is treated as a placeholder for the arguments. The placeholders are replaced with the values of the arguments when the command is run.
 
+#### Greedy Matching
+
+> [!NOTE]
+> This behavior may be changed in the future, but for now, it is a known limitation.
+
+The `*` and `+` arguments are greedy, meaning that they will consume all remaining arguments. For example, if you have a recipe with the following arguments:
+
+```toml
+arguments = ["*arg0", "*arg1"]
+```
+
+Then `*arg1` will always be empty, since `*arg0` will consume all remaining arguments. Also consider:
+
+```toml
+arguments = ["*arg0", "arg1"]
+```
+
+In this case, `*arg0` will consume all remaining arguments, leaving required argument `arg1` empty. So `jiu` will return an error, although the arguments can be interpreted without ambiguity.
+
+Also be careful when working with optional arguments, since they share the same greedy behavior. For example:
+
+```toml
+arguments = ["?arg0", "arg1"]
+```
+
+When a single argument is passed, `?arg0` will consume it, leaving `arg1` empty. So this will also cause an error.
+
 ## 🤔 Comparison
 
 This tool is heavily inspired by [`just`](https://github.com/casey/just/), but is fundamentally different. To summarize:

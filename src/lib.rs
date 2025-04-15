@@ -7,12 +7,10 @@
 
 mod arguments;
 
+use anyhow::{Result, bail};
 use arguments::{ArgumentDefinition, ResolvedArgument};
 use serde::Deserialize;
-use std::{
-    collections::{HashMap, VecDeque},
-    error::Error,
-};
+use std::collections::{HashMap, VecDeque};
 
 /// The configuration.
 #[derive(Deserialize, Debug)]
@@ -44,7 +42,7 @@ pub struct Recipe {
 
 impl Recipe {
     /// Resolves to a command with the given arguments.
-    pub fn resolve(self, mut args: VecDeque<String>) -> Result<Vec<String>, Box<dyn Error>> {
+    pub fn resolve(self, mut args: VecDeque<String>) -> Result<Vec<String>> {
         let Self {
             arguments, command, ..
         } = self;
@@ -63,14 +61,16 @@ impl Recipe {
                 LitOrArg::Literal(literal) => resolved_command.push(literal),
                 LitOrArg::Argument(arg) => {
                     let Some(resolved_arg) = resolved_args.get(&arg.name) else {
-                        return Err(format!("Argument {} not found", arg.name).into());
+                        bail!(
+                            "Argument {} not found",
+                            arg.name
+                        );
                     };
                     if !resolved_arg.matches(&arg.arg_type) {
-                        return Err(format!(
+                        bail!(
                             "Argument {} does not match type {:?}",
                             arg.name, arg.arg_type
-                        )
-                        .into());
+                        );
                     }
                     match resolved_arg {
                         ResolvedArgument::Required(value) => resolved_command.push(value.clone()),
