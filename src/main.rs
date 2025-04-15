@@ -8,12 +8,8 @@ fn main() -> Result<()> {
     // Checking environment
     let debug = env::var("JIU_DEBUG").is_ok();
 
-    // Parsing config
-    let toml = fs::read_to_string(".jiu.toml")?;
-    let config: Config = toml::de::from_str(&toml)?;
-    if debug {
-        eprintln!("{config:#?}");
-    }
+    // Finding config file
+    let config = find_config_file(debug)?;
 
     // Collecting arguments
     let mut iter = env::args();
@@ -66,4 +62,41 @@ fn main() -> Result<()> {
         eprintln!("Command exited with {status}");
     }
     std::process::exit(status.code().unwrap_or(1));
+}
+
+/// Search for config file in the current directory and its parents. To be specific:
+///
+/// 1. Find the closest parent directory that contains a `.jiu.toml` file.
+/// 2. Deserialize the file into a [`Config`] struct.
+/// 3. Set working directory to the directory containing the config file.
+fn find_config_file(debug: bool) -> Result<Config> {
+    let mut path = env::current_dir()?;
+    loop {
+        let config_path = path.join(".jiu.toml");
+        if config_path.exists() {
+            let config = fs::read_to_string(&config_path)
+                .with_context(|| format!("Error reading config file \"{config_path:?}\""))?;
+            if debug {
+                eprintln!("Found config file: {config_path:?}");
+            }
+            let config: Config = toml::de::from_str(&config)
+                .with_context(|| format!("Error deserializing config file \"{config_path:?}\""))?;
+            if debug {
+                eprintln!("Deserialized config: {config:#?}");
+            }
+
+            // Set the working directory to the directory containing the config file
+            env::set_current_dir(&path)
+                .with_context(|| format!("Error setting working directory to \"{path:?}\""))?;
+            if debug {
+                eprintln!("Set working directory to: {path:?}");
+            }
+
+            return Ok(config);
+        }
+        if !path.pop() {
+            break;
+        }
+    }
+    bail!("No config file found")
 }

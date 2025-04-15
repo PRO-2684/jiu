@@ -82,7 +82,7 @@ If the leading symbol is omitted, the argument is treated as a required argument
 
 #### Command
 
-The `command` field is a list made up of strings and arrays that represents the command to run. Each string is treated as a literal string, while each array is treated as a placeholder for the arguments. The placeholders are replaced with the values of the arguments when the command is run.
+The `command` field is a list made up of strings and arrays that represents the command to run. Each string is treated as a literal string, while each array is treated as a placeholder for the arguments. The placeholders are replaced with the values of the arguments when the command is run. After the arguments are resolved, the command is executed in the directory of the config file.
 
 #### Greedy Matching
 
@@ -141,8 +141,6 @@ This tool is heavily inspired by [`just`](https://github.com/casey/just/), but i
 
 ## ✅ TODO
 
-- Search for config file in parent directories
-- Set working directory to config file location
 - Global `description` field
 - `env` field on recipes
 
