@@ -54,5 +54,16 @@ fn main() -> Result<()> {
         eprintln!("Resolved command: {resolved:?}");
     }
 
-    Ok(())
+    // Executing the command
+    let status = std::process::Command::new(&resolved[0])
+        .args(&resolved[1..])
+        .spawn()
+        .with_context(|| format!("Error spawning command \"{resolved:?}\""))?
+        .wait()
+        .with_context(|| format!("Error waiting for command \"{resolved:?}\""))?;
+
+    if debug {
+        eprintln!("Command exited with {status}");
+    }
+    std::process::exit(status.code().unwrap_or(1));
 }

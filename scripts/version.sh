@@ -2,8 +2,9 @@
 
 # If no arguments are passed, print the version
 if [ $# -eq 0 ]; then
+    # Exit with git's exit code
     git describe --tags --abbrev=0
-    exit 0
+    exit $?
 fi
 
 # If more than one argument is passed, print an error message
