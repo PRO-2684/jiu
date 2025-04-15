@@ -1,7 +1,7 @@
 //! Module for parsing and resolving recipe arguments.
 
-use std::collections::VecDeque;
 use serde::Deserialize;
+use std::collections::VecDeque;
 
 /// A recipe argument defined the configuration file.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -19,7 +19,10 @@ impl<'de> Deserialize<'de> for ArgumentDefinition {
     {
         // Take a string and parse it into an Argument
         let mut name: String = String::deserialize(deserializer)?;
-        let first = name.chars().next().ok_or(serde::de::Error::custom("Empty argument"))?;
+        let first = name
+            .chars()
+            .next()
+            .ok_or(serde::de::Error::custom("Empty argument"))?;
         let arg_type = match first {
             '?' => ArgumentType::Optional,
             '*' => ArgumentType::Variadic,
@@ -30,10 +33,7 @@ impl<'de> Deserialize<'de> for ArgumentDefinition {
             name.remove(0); // Remove the leading symbol
         }
 
-        Ok(Self {
-            name,
-            arg_type,
-        })
+        Ok(Self { name, arg_type })
     }
 }
 
@@ -94,6 +94,19 @@ pub enum ResolvedArgument {
     RequiredVariadic(Vec<String>),
 }
 
+impl ResolvedArgument {
+    /// Checks that the argument matches the expected type.
+    pub fn matches(&self, arg_type: &ArgumentType) -> bool {
+        match (self, arg_type) {
+            (Self::Required(_), ArgumentType::Required) => true,
+            (Self::Optional(_), ArgumentType::Optional) => true,
+            (Self::Variadic(_), ArgumentType::Variadic) => true,
+            (Self::RequiredVariadic(_), ArgumentType::RequiredVariadic) => true,
+            _ => false,
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -101,11 +114,18 @@ mod tests {
     #[test]
     fn test_argument_resolving_1() {
         // Test the resolving of required and optional arguments
-        let mut args = VecDeque::from(vec!["arg1".to_string(), "arg2".to_string(), "arg3".to_string()]);
+        let mut args = VecDeque::from(vec![
+            "arg1".to_string(),
+            "arg2".to_string(),
+            "arg3".to_string(),
+        ]);
 
         let arg = ArgumentType::Optional.resolve(&mut args).unwrap();
         assert_eq!(arg, ResolvedArgument::Optional(Some("arg1".to_string())));
-        assert_eq!(args, VecDeque::from(vec!["arg2".to_string(), "arg3".to_string()]));
+        assert_eq!(
+            args,
+            VecDeque::from(vec!["arg2".to_string(), "arg3".to_string()])
+        );
 
         let arg = ArgumentType::Required.resolve(&mut args).unwrap();
         assert_eq!(arg, ResolvedArgument::Required("arg2".to_string()));
@@ -127,14 +147,30 @@ mod tests {
     #[test]
     fn test_argument_resolving_2() {
         // Test the resolving of variadic and required variadic arguments
-        let mut args = VecDeque::from(vec!["arg1".to_string(), "arg2".to_string(), "arg3".to_string()]);
+        let mut args = VecDeque::from(vec![
+            "arg1".to_string(),
+            "arg2".to_string(),
+            "arg3".to_string(),
+        ]);
 
         let arg = ArgumentType::Variadic.resolve(&mut args).unwrap();
-        assert_eq!(arg, ResolvedArgument::Variadic(vec!["arg1".to_string(), "arg2".to_string(), "arg3".to_string()]));
+        assert_eq!(
+            arg,
+            ResolvedArgument::Variadic(vec![
+                "arg1".to_string(),
+                "arg2".to_string(),
+                "arg3".to_string()
+            ])
+        );
         assert_eq!(args, VecDeque::from(vec![]));
 
-        let arg = ArgumentType::RequiredVariadic.resolve(&mut args).unwrap_err();
-        assert_eq!(arg, "Required variadic argument must contain at least one value");
+        let arg = ArgumentType::RequiredVariadic
+            .resolve(&mut args)
+            .unwrap_err();
+        assert_eq!(
+            arg,
+            "Required variadic argument must contain at least one value"
+        );
         assert_eq!(args, VecDeque::from(vec![]));
     }
 }

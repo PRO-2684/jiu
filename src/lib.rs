@@ -7,8 +7,12 @@
 
 mod arguments;
 
-use serde::Deserialize;
 pub use arguments::{ArgumentDefinition, ArgumentType, ResolvedArgument};
+use serde::Deserialize;
+use std::{
+    collections::{HashMap, VecDeque},
+    error::Error,
+};
 
 /// The configuration.
 #[derive(Deserialize, Debug)]
@@ -38,6 +42,62 @@ pub struct Recipe {
     pub command: Vec<LitOrArg>,
 }
 
+impl Recipe {
+    /// Resolves to a command with the given arguments.
+    pub fn resolve(self, mut args: VecDeque<String>) -> Result<Vec<String>, Box<dyn Error>> {
+        let Self {
+            arguments, command, ..
+        } = self;
+
+        // Resolve the arguments
+        let mut resolved_args = HashMap::new();
+        for arg in arguments {
+            let resolved_arg = arg.arg_type.resolve(&mut args)?;
+            resolved_args.insert(arg.name, resolved_arg);
+        }
+
+        // Resolve the command
+        let mut resolved_command = Vec::new();
+        for component in command {
+            match component {
+                LitOrArg::Literal(literal) => resolved_command.push(literal),
+                LitOrArg::Argument(arg) => {
+                    let Some(resolved_arg) = resolved_args.get(&arg.name) else {
+                        return Err(format!("Argument {} not found", arg.name).into());
+                    };
+                    if !resolved_arg.matches(&arg.arg_type) {
+                        return Err(format!(
+                            "Argument {} does not match type {:?}",
+                            arg.name, arg.arg_type
+                        )
+                        .into());
+                    }
+                    match resolved_arg {
+                        ResolvedArgument::Required(value) => resolved_command.push(value.clone()),
+                        ResolvedArgument::Optional(value) => {
+                            if let Some(v) = value {
+                                resolved_command.push(v.clone());
+                            }
+                        }
+                        ResolvedArgument::Variadic(values) => {
+                            for value in values {
+                                resolved_command.push(value.clone());
+                            }
+                        }
+                        ResolvedArgument::RequiredVariadic(values) => {
+                            for value in values {
+                                resolved_command.push(value.clone());
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        Ok(resolved_command)
+    }
+}
+
 /// A string literal or an argument.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum LitOrArg {
@@ -63,10 +123,14 @@ impl<'de> Deserialize<'de> for LitOrArg {
             InnerRepr::Arguments(mut args) => {
                 // Only accept arrays of length 1
                 let Some(arg) = args.pop() else {
-                    return Err(serde::de::Error::custom("Expected a single argument, but got none"));
+                    return Err(serde::de::Error::custom(
+                        "Expected a single argument, but got none",
+                    ));
                 };
                 if !args.is_empty() {
-                    return Err(serde::de::Error::custom("Expected a single argument, but got multiple"));
+                    return Err(serde::de::Error::custom(
+                        "Expected a single argument, but got multiple",
+                    ));
                 }
                 Ok(Self::Argument(arg))
             }
@@ -113,9 +177,21 @@ mod tests {
         assert_eq!(recipe.command.len(), 6);
         assert_eq!(recipe.command[0], LitOrArg::Literal("echo".to_string()));
         assert_eq!(recipe.command[1], LitOrArg::Literal("Hello".to_string()));
-        assert_eq!(recipe.command[2], LitOrArg::Argument(recipe.arguments[0].clone()));
-        assert_eq!(recipe.command[3], LitOrArg::Argument(recipe.arguments[1].clone()));
-        assert_eq!(recipe.command[4], LitOrArg::Argument(recipe.arguments[2].clone()));
-        assert_eq!(recipe.command[5], LitOrArg::Argument(recipe.arguments[3].clone()));
+        assert_eq!(
+            recipe.command[2],
+            LitOrArg::Argument(recipe.arguments[0].clone())
+        );
+        assert_eq!(
+            recipe.command[3],
+            LitOrArg::Argument(recipe.arguments[1].clone())
+        );
+        assert_eq!(
+            recipe.command[4],
+            LitOrArg::Argument(recipe.arguments[2].clone())
+        );
+        assert_eq!(
+            recipe.command[5],
+            LitOrArg::Argument(recipe.arguments[3].clone())
+        );
     }
 }

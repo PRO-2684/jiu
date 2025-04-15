@@ -10,7 +10,7 @@ fn main() {
         Err(e) => {
             eprintln!("Error parsing .jiu.toml: {}", e);
             std::process::exit(1);
-        },
+        }
     };
     println!("{config:#?}");
 }
