@@ -7,10 +7,13 @@
 
 mod arguments;
 
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result, bail};
 use arguments::{ArgumentDefinition, ResolvedArgument};
 use serde::Deserialize;
-use std::{collections::{HashMap, VecDeque}, fmt::Display};
+use std::{
+    collections::{HashMap, VecDeque},
+    fmt::Display,
+};
 
 /// The configuration.
 #[derive(Deserialize, Debug)]
@@ -45,6 +48,13 @@ pub struct Recipe {
 
 impl Recipe {
     /// Resolves to a command with the given arguments.
+    ///
+    /// ## Errors
+    ///
+    /// - If an argument could not be resolved.
+    /// - If a referenced argument is not defined.
+    /// - If a referenced argument does not match the defined type.
+    /// - If unexpected arguments are left after resolving.
     pub fn resolve(self, mut args: VecDeque<String>) -> Result<Vec<String>> {
         let Self {
             arguments, command, ..
@@ -53,7 +63,9 @@ impl Recipe {
         // Resolve the arguments
         let mut resolved_args = HashMap::new();
         for arg in arguments {
-            let resolved_arg = arg.arg_type.resolve(&mut args)
+            let resolved_arg = arg
+                .arg_type
+                .resolve(&mut args)
                 .with_context(|| format!("While resolving argument \"{arg}\""))?;
             resolved_args.insert(arg.name, resolved_arg);
         }
@@ -82,12 +94,8 @@ impl Recipe {
                                 resolved_command.push(v.clone());
                             }
                         }
-                        ResolvedArgument::Variadic(values) => {
-                            for value in values {
-                                resolved_command.push(value.clone());
-                            }
-                        }
-                        ResolvedArgument::RequiredVariadic(values) => {
+                        ResolvedArgument::Variadic(values)
+                        | ResolvedArgument::RequiredVariadic(values) => {
                             for value in values {
                                 resolved_command.push(value.clone());
                             }
@@ -106,6 +114,7 @@ impl Recipe {
     }
 
     /// Summarizes the recipe.
+    #[must_use]
     pub fn summarize(&self) -> String {
         let Self {
             names,
@@ -117,21 +126,17 @@ impl Recipe {
         let description = if description.is_empty() {
             "<No description>"
         } else {
-            &description
+            description
         };
         let arguments: Vec<String> = arguments
             .iter()
-            .map(|arg| arg.to_string())
+            .map(std::string::ToString::to_string)
             .collect();
         if arguments.is_empty() {
-            format!(
-                "{names}: {description}",
-            )
+            format!("{names}: {description}",)
         } else {
             let arguments = &arguments.join(" ");
-            format!(
-                "{names} {arguments}: {description}",
-            )
+            format!("{names} {arguments}: {description}",)
         }
     }
 }

@@ -1,6 +1,6 @@
 //! Module for parsing and resolving recipe arguments.
 
-use anyhow::{bail, Result};
+use anyhow::{Result, bail};
 use serde::Deserialize;
 use std::{collections::VecDeque, fmt::Display};
 
@@ -23,7 +23,7 @@ impl<'de> Deserialize<'de> for ArgumentDefinition {
         let first = name
             .chars()
             .next()
-            .ok_or(serde::de::Error::custom("Empty argument"))?;
+            .ok_or_else(|| serde::de::Error::custom("Empty argument"))?;
         let arg_type = match first {
             '?' => ArgumentType::Optional,
             '*' => ArgumentType::Variadic,
@@ -120,7 +120,7 @@ pub enum ResolvedArgument {
 
 impl ResolvedArgument {
     /// Gets the argument type.
-    pub fn arg_type(&self) -> ArgumentType {
+    pub const fn arg_type(&self) -> ArgumentType {
         match self {
             Self::Required(_) => ArgumentType::Required,
             Self::Optional(_) => ArgumentType::Optional,

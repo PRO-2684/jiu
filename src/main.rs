@@ -2,7 +2,7 @@
 
 use anyhow::{Context, Result, bail};
 use jiu::Config;
-use std::{collections::VecDeque, fs, env};
+use std::{collections::VecDeque, env, fs};
 
 fn main() -> Result<()> {
     // Checking environment
