@@ -94,6 +94,17 @@ impl ArgumentType {
     }
 }
 
+impl Display for ArgumentType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Required => write!(f, "Required"),
+            Self::Optional => write!(f, "?Optional"),
+            Self::Variadic => write!(f, "*Variadic"),
+            Self::RequiredVariadic => write!(f, "+RequiredVariadic"),
+        }
+    }
+}
+
 /// A resolved argument with concrete values.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ResolvedArgument {
@@ -108,15 +119,19 @@ pub enum ResolvedArgument {
 }
 
 impl ResolvedArgument {
+    /// Gets the argument type.
+    pub fn arg_type(&self) -> ArgumentType {
+        match self {
+            Self::Required(_) => ArgumentType::Required,
+            Self::Optional(_) => ArgumentType::Optional,
+            Self::Variadic(_) => ArgumentType::Variadic,
+            Self::RequiredVariadic(_) => ArgumentType::RequiredVariadic,
+        }
+    }
+
     /// Checks that the argument matches the expected type.
     pub fn matches(&self, arg_type: &ArgumentType) -> bool {
-        match (self, arg_type) {
-            (Self::Required(_), ArgumentType::Required) => true,
-            (Self::Optional(_), ArgumentType::Optional) => true,
-            (Self::Variadic(_), ArgumentType::Variadic) => true,
-            (Self::RequiredVariadic(_), ArgumentType::RequiredVariadic) => true,
-            _ => false,
-        }
+        self.arg_type() == *arg_type
     }
 }
 

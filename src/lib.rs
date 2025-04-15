@@ -7,7 +7,7 @@
 
 mod arguments;
 
-use anyhow::{Result, bail};
+use anyhow::{bail, Context, Result};
 use arguments::{ArgumentDefinition, ResolvedArgument};
 use serde::Deserialize;
 use std::{collections::{HashMap, VecDeque}, fmt::Display};
@@ -53,7 +53,8 @@ impl Recipe {
         // Resolve the arguments
         let mut resolved_args = HashMap::new();
         for arg in arguments {
-            let resolved_arg = arg.arg_type.resolve(&mut args)?;
+            let resolved_arg = arg.arg_type.resolve(&mut args)
+                .with_context(|| format!("While resolving argument \"{arg}\""))?;
             resolved_args.insert(arg.name, resolved_arg);
         }
 
@@ -62,15 +63,16 @@ impl Recipe {
         for component in command {
             match component {
                 LitOrArg::Literal(literal) => resolved_command.push(literal),
-                LitOrArg::Argument(arg) => {
-                    let Some(resolved_arg) = resolved_args.get(&arg.name) else {
-                        bail!("Argument {} not found", arg.name);
+                LitOrArg::Argument(ref_arg) => {
+                    let Some(resolved_arg) = resolved_args.get(&ref_arg.name) else {
+                        bail!("Argument {} not found", ref_arg.name);
                     };
-                    if !resolved_arg.matches(&arg.arg_type) {
+                    if !resolved_arg.matches(&ref_arg.arg_type) {
                         bail!(
-                            "Argument {} does not match type {:?}",
-                            arg.name,
-                            arg.arg_type
+                            "Argument \"{}\" defined as {} but referenced as {}",
+                            ref_arg.name,
+                            resolved_arg.arg_type(),
+                            ref_arg.arg_type,
                         );
                     }
                     match resolved_arg {
