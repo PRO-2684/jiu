@@ -76,7 +76,8 @@ This tool is heavily inspired by [`just`](https://github.com/casey/just/), but i
 
 ## ✅ TODO
 
-- `env` field
+- Global `description` field
+- `env` field on recipes
 
 ## 🎉 Credits
 
