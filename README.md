@@ -124,7 +124,7 @@ jiu <recipe> [<args>...]
 Run with environment variable `JIU_DEBUG` set to enable debug mode. In bash, you can do this with:
 
 ```shell
-JIU_DEBUG=1 jiu <recipe> <args>
+JIU_DEBUG=1 jiu <recipe> [<args>...]
 ```
 
 Which would provide additional information for debugging purposes.
