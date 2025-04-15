@@ -2,17 +2,30 @@
 
 use anyhow::{Context, Result, bail};
 use jiu::Config;
-use std::{collections::VecDeque, fs};
+use std::{collections::VecDeque, fs, env};
 
 fn main() -> Result<()> {
+    // Checking environment
+    let debug = env::var("JIU_DEBUG").is_ok();
+
+    // Parsing config
     let toml = fs::read_to_string(".jiu.toml")?;
     let config: Config = toml::de::from_str(&toml)?;
-    println!("{config:#?}");
+    if debug {
+        eprintln!("{config:#?}");
+    }
 
-    let mut iter = std::env::args();
+    // Collecting arguments
+    let mut iter = env::args();
     let program_name = iter.next().unwrap_or_else(|| "jiu".to_string());
     let recipe_name = iter.next().unwrap_or(config.default);
     let args: VecDeque<String> = iter.collect();
+    if debug {
+        eprintln!("I am \"{program_name}\" running recipe \"{recipe_name}\"");
+        eprintln!("Received recipe arguments: {args:?}");
+    }
+
+    // Finding the recipe
     let Some(recipe) = config
         .recipes
         .into_iter()
@@ -20,10 +33,14 @@ fn main() -> Result<()> {
     else {
         bail!("Recipe \"{recipe_name}\" not found");
     };
+
+    // Resolving the recipe
     let resolved = recipe
         .resolve(args)
         .with_context(|| format!("Error resolving recipe \"{recipe_name}\""))?;
-    println!("{program_name} {recipe_name} {resolved:#?}");
+    if debug {
+        eprintln!("Resolved command: {resolved:?}");
+    }
 
     Ok(())
 }

@@ -39,7 +39,9 @@ See [`.jiu.toml`](./.jiu.toml) for a simple example used in this repository~~, o
 The config file is a simple TOML file named `.jiu.toml`. The format is as follows:
 
 ```toml
-default = "run" # Default recipe to run (Optional, lists all recipes if empty)
+default = "run" # Default recipe to run when invoked without any arguments (Optional)
+# - List all recipes if empty
+# - Default recipe must be able to accept no arguments
 
 [[recipes]]
 names = ["run", "r"] # Names of the recipe (Required, must contain at least one name and each name should be unique across all recipes)
@@ -90,6 +92,24 @@ arguments = ["?arg0", "arg1"]
 ```
 
 When a single argument is passed, `?arg0` will consume it, leaving `arg1` empty. So this will also cause an error.
+
+### Running
+
+To run a recipe, simply call `jiu` with the name of the recipe and arguments for the recipe:
+
+```shell
+jiu <recipe> [<args>...]
+```
+
+### Debugging
+
+Run with environment variable `JIU_DEBUG` set to enable debug mode. In bash, you can do this with:
+
+```shell
+JIU_DEBUG=1 jiu <recipe> <args>
+```
+
+Which would provide additional information for debugging purposes.
 
 ## 🤔 Comparison
 

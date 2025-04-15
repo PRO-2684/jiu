@@ -15,7 +15,10 @@ use std::collections::{HashMap, VecDeque};
 /// The configuration.
 #[derive(Deserialize, Debug)]
 pub struct Config {
-    /// Default recipe to run.
+    /// Default recipe to run when invoked without any arguments.
+    ///
+    /// - List all recipes if empty.
+    /// - Default recipe must be able to accept no arguments.
     #[serde(default)]
     pub default: String,
     /// Recipes.
