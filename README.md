@@ -30,7 +30,25 @@ cargo install jiu
 
 ## 💡 Examples
 
-See [`.jiu.toml`](./.jiu.toml) for a simple example used in this repository~~, or the [`tests`](./tests) directory for more complex examples~~.
+See [`.jiu.toml`](./.jiu.toml) for a simple example used in this repository, ~~or the [`tests`](./tests) directory for more complex examples~~. Here's an example involving complex arguments:
+
+```shell
+jiu dummy 1 "2" '"3"' " 4" "" "5 6"
+```
+
+Which will invoke [`dummy.sh`](./scripts/dummy.sh), printing arguments it received:
+
+```shell
+Arg#1: 1
+The rest:
+2
+"3"
+ 4
+
+5 6
+```
+
+Note that the arguments are all handled correctly.
 
 ## 📖 Usage
 
