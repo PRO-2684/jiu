@@ -64,15 +64,13 @@ impl Recipe {
                 LitOrArg::Literal(literal) => resolved_command.push(literal),
                 LitOrArg::Argument(arg) => {
                     let Some(resolved_arg) = resolved_args.get(&arg.name) else {
-                        bail!(
-                            "Argument {} not found",
-                            arg.name
-                        );
+                        bail!("Argument {} not found", arg.name);
                     };
                     if !resolved_arg.matches(&arg.arg_type) {
                         bail!(
                             "Argument {} does not match type {:?}",
-                            arg.name, arg.arg_type
+                            arg.name,
+                            arg.arg_type
                         );
                     }
                     match resolved_arg {
@@ -95,6 +93,11 @@ impl Recipe {
                     }
                 }
             }
+        }
+
+        // Check if there are any remaining arguments
+        if !args.is_empty() {
+            bail!("Unexpected argument(s): {args:?}");
         }
 
         Ok(resolved_command)
