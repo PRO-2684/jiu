@@ -21,3 +21,9 @@ names = ["version", "v"]
 description = "Set or get version"
 arguments = ["?version"]
 command = ["./scripts/version.sh", ["?version"]]
+
+[[recipes]]
+names = ["dummy"]
+description = "Dummy recipe that prints arguments"
+arguments = ["first", "*rest"]
+command = ["./scripts/dummy.sh", ["first"], ["*rest"]]
