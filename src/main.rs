@@ -3,9 +3,13 @@
 use anyhow::{Context, Result, bail};
 use jiu::Config;
 use std::{collections::VecDeque, env, fs};
+use supports_color::Stream;
 
 fn main() -> Result<()> {
     // Checking environment
+    let color = supports_color::on(Stream::Stdout)
+        .map(|level| level.has_basic)
+        .unwrap_or(false);
     let debug = env::var("JIU_DEBUG").is_ok();
 
     // Locating and parsing config file
@@ -31,7 +35,7 @@ fn main() -> Result<()> {
         }
         println!("Available recipes:");
         for recipe in config.recipes {
-            println!("  {recipe}");
+            println!("  {}", recipe.summarize(color));
         }
         return Ok(());
     }

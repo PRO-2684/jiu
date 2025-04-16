@@ -9,11 +9,9 @@ mod arguments;
 
 use anyhow::{Context, Result, bail};
 use arguments::{ArgumentDefinition, ResolvedArgument};
+use owo_colors::OwoColorize;
 use serde::Deserialize;
-use std::{
-    collections::{HashMap, VecDeque},
-    fmt::Display,
-};
+use std::collections::{HashMap, VecDeque};
 
 /// The configuration.
 #[derive(Deserialize, Debug)]
@@ -69,7 +67,7 @@ impl Recipe {
             let resolved_arg = arg
                 .arg_type
                 .resolve(&mut args)
-                .with_context(|| format!("While resolving argument \"{arg}\""))?;
+                .with_context(|| format!("While resolving argument \"{}\"", arg.summary(false)))?;
             resolved_args.insert(arg.name, resolved_arg);
         }
 
@@ -118,7 +116,7 @@ impl Recipe {
 
     /// Summarizes the recipe.
     #[must_use]
-    pub fn summarize(&self) -> String {
+    pub fn summarize(&self, color: bool) -> String {
         let Self {
             names,
             description,
@@ -129,11 +127,16 @@ impl Recipe {
         let description = if description.is_empty() {
             "".to_string()
         } else {
-            format!(": {description}")
+            let s = format!(" # {description}");
+            if color {
+                s.dimmed().to_string()
+            } else {
+                s
+            }
         };
         let arguments: Vec<String> = arguments
             .iter()
-            .map(std::string::ToString::to_string)
+            .map(|arg| arg.summary(color))
             .collect();
         let arguments = if arguments.is_empty() {
             String::new()
@@ -141,12 +144,6 @@ impl Recipe {
             format!(" {}", arguments.join(" "))
         };
         format!("{names}{arguments}{description}")
-    }
-}
-
-impl Display for Recipe {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.summarize())
     }
 }
 

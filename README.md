@@ -10,6 +10,16 @@
 
 A minimal command runner.
 
+## 🤔 Comparison
+
+This tool is heavily inspired by [`just`](https://github.com/casey/just/), but is fundamentally different. To summarize:
+
+- Pro: It handles arguments correctly, and without any ambiguity
+    - `just` could cause argument splitting issues
+    - Although [there are workarounds](https://just.systems/man/en/avoiding-argument-splitting.html), corner cases still exist
+- Pro: Is independent of shell
+- Con: But at the cost of much less customization and features
+
 ## 📥 Installation
 
 ### Using [`binstall`](https://github.com/cargo-bins/cargo-binstall)
@@ -59,6 +69,8 @@ The config file is a simple TOML file named `.jiu.toml`. The format is as follow
 ```toml
 description = "`jiu`: A minimal command runner." # Description of the configuration (Optional)
 # - Will be displayed when listing recipes
+# - To add some colors to the dull description, use ANSI escape codes like:
+#   description = "\u001b[1;36mjiu\u001b[22;39m: A minimal command runner."
 default = "run" # Default recipe to run when invoked without any arguments (Optional)
 # - List all recipes if empty
 # - Default recipe must be able to accept no arguments
@@ -130,16 +142,6 @@ JIU_DEBUG=1 jiu <recipe> [<args>...]
 ```
 
 Which would provide additional information for debugging purposes.
-
-## 🤔 Comparison
-
-This tool is heavily inspired by [`just`](https://github.com/casey/just/), but is fundamentally different. To summarize:
-
-- Pro: It handles arguments correctly, and without any ambiguity
-    - `just` could cause argument splitting issues
-    - Although [there are workarounds](https://just.systems/man/en/avoiding-argument-splitting.html), corner cases still exist
-- Pro: Is independent of shell
-- Con: But at the cost of much less customization and features
 
 ## ✅ TODO
 

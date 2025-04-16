@@ -3,6 +3,7 @@
 use anyhow::{Result, bail};
 use serde::Deserialize;
 use std::{collections::VecDeque, fmt::Display};
+use owo_colors::OwoColorize;
 
 /// A recipe argument defined the configuration file.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -38,15 +39,19 @@ impl<'de> Deserialize<'de> for ArgumentDefinition {
     }
 }
 
-impl Display for ArgumentDefinition {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl ArgumentDefinition {
+    pub fn summary(&self, color: bool) -> String {
         let symbol = match self.arg_type {
             ArgumentType::Required => "",
             ArgumentType::Optional => "?",
             ArgumentType::Variadic => "*",
             ArgumentType::RequiredVariadic => "+",
         };
-        write!(f, "{}{}", symbol, self.name)
+        if color {
+            format!("{}{}", symbol, self.name.cyan())
+        } else {
+            format!("{}{}", symbol, self.name)
+        }
     }
 }
 
