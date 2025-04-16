@@ -1,0 +1,18 @@
+---
+width: 80
+height: 24
+title: jiu@v0.1.1 demo
+idle: 1s
+---
+
+@@prompt "\u001b[36m$ \u001b[0m"
+@@secondary "\u001b[2;36m> \u001b[0m"
+@@continuation "\u001b[2m \\\u001b[0m"
+@@start-lag 500ms
+@@end-lag 500ms
+@@interval 100ms
+
+$ ./jiu
+@expect failure
+$ ./jiu dummy # Failure
+$ ./jiu dummy 1 "2" '"3"' " 4" "" "5 6"

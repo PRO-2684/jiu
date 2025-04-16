@@ -40,6 +40,12 @@ cargo install jiu
 
 ## 💡 Examples
 
+<details><summary>Demo asciicast</summary>
+
+[![asciicast](https://asciinema.org/a/bnuQc8QP9IcgUoAY2gytD7h5T.svg)](https://asciinema.org/a/bnuQc8QP9IcgUoAY2gytD7h5T)
+
+</details>
+
 See [`.jiu.toml`](./.jiu.toml) for a simple example used in this repository, ~~or the [`tests`](./tests) directory for more complex examples~~. Here's an example involving complex arguments:
 
 ```shell
