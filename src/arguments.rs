@@ -1,9 +1,9 @@
 //! Module for parsing and resolving recipe arguments.
 
 use anyhow::{Result, bail};
+use owo_colors::OwoColorize;
 use serde::Deserialize;
 use std::{collections::VecDeque, fmt::Display};
-use owo_colors::OwoColorize;
 
 /// A recipe argument defined the configuration file.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -40,18 +40,21 @@ impl<'de> Deserialize<'de> for ArgumentDefinition {
 }
 
 impl ArgumentDefinition {
-    pub fn summary(&self, color: bool) -> String {
+    /// Summarizes the argument, returning a string representation and the length.
+    pub fn summarize(&self, color: bool) -> (String, usize) {
         let symbol = match self.arg_type {
             ArgumentType::Required => "",
             ArgumentType::Optional => "?",
             ArgumentType::Variadic => "*",
             ArgumentType::RequiredVariadic => "+",
         };
-        if color {
+        let len = self.name.len() + symbol.len();
+        let summary = if color {
             format!("{}{}", symbol, self.name.cyan())
         } else {
             format!("{}{}", symbol, self.name)
-        }
+        };
+        (summary, len)
     }
 }
 

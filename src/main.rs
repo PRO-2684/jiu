@@ -18,7 +18,8 @@ fn main() -> Result<()> {
     // Collecting arguments
     let mut iter = env::args();
     let program_name = iter.next().unwrap_or_else(|| "jiu".to_string());
-    let recipe_name = iter.next().unwrap_or(config.default);
+    let recipe_name = iter.next();
+    let recipe_name = recipe_name.as_ref().unwrap_or(&config.default);
     let args: VecDeque<String> = iter.collect();
     if debug {
         eprintln!("I am \"{program_name}\" running recipe \"{recipe_name}\"");
@@ -27,16 +28,7 @@ fn main() -> Result<()> {
 
     // Listing recipies if the name is empty
     if recipe_name.is_empty() {
-        if config.recipes.is_empty() {
-            bail!("No recipes found");
-        }
-        if !config.description.is_empty() {
-            println!("{}\n", config.description);
-        }
-        println!("Available recipes:");
-        for recipe in config.recipes {
-            println!("  {}", recipe.summarize(color));
-        }
+        println!("{}", config.summarize(color));
         return Ok(());
     }
 

@@ -30,6 +30,62 @@ pub struct Config {
     pub recipes: Vec<Recipe>,
 }
 
+impl Config {
+    /// Summarizes the configuration.
+    #[must_use]
+    pub fn summarize(&self, color: bool) -> String {
+        let description = if self.description.is_empty() {
+            String::new()
+        } else {
+            // Add an extra new line
+            format!("{}\n", self.description)
+        };
+
+        let recipes = self.summarize_recipes(color);
+        format!("{description}\n{recipes}")
+    }
+
+    /// Summarizes the recipes.
+    fn summarize_recipes(&self, color: bool) -> String {
+        if self.recipes.is_empty() {
+            return "No recipes found".to_string();
+        }
+
+        // A pack of (definition, definition_length, description)
+        let pack: Vec<_> = self
+            .recipes
+            .iter()
+            .map(|recipe| {
+                let (def, def_len) = recipe.summarize_definition(color);
+                (def, def_len, &recipe.description)
+            })
+            .collect();
+        let max_def_len = pack.iter().map(|(_, len, _)| *len).max().unwrap_or(0);
+
+        let recipes = pack.into_iter()
+            .map(|(def, def_len, description)| {
+                // Calculate required padding
+                let padding = max_def_len.saturating_sub(def_len);
+                let padding = " ".repeat(padding);
+
+                // Format the description
+                let description = if description.is_empty() {
+                    String::new()
+                } else {
+                    let s = format!(" # {description}");
+                    if color { s.dimmed().to_string() } else { s }
+                };
+
+                // Format the summary for this recipe
+                format!("  {def}{padding}{description}")
+            })
+            .collect::<Vec<_>>()
+            .join("\n");
+
+        format!("Available recipes:\n{recipes}")
+    }
+}
+
 /// The recipe.
 #[derive(Deserialize, Debug)]
 pub struct Recipe {
@@ -64,10 +120,9 @@ impl Recipe {
         // Resolve the arguments
         let mut resolved_args = HashMap::new();
         for arg in arguments {
-            let resolved_arg = arg
-                .arg_type
-                .resolve(&mut args)
-                .with_context(|| format!("While resolving argument \"{}\"", arg.summary(false)))?;
+            let resolved_arg = arg.arg_type.resolve(&mut args).with_context(|| {
+                format!("While resolving argument \"{}\"", arg.summarize(false).0)
+            })?;
             resolved_args.insert(arg.name, resolved_arg);
         }
 
@@ -114,36 +169,29 @@ impl Recipe {
         Ok(resolved_command)
     }
 
-    /// Summarizes the recipe.
+    /// Summarizes the recipe definition, returning a string representation and the length.
+    ///
+    /// Note that the length will be one more than the actual display length of the string, as it counted an extra space.
     #[must_use]
-    pub fn summarize(&self, color: bool) -> String {
-        let Self {
-            names,
-            description,
-            command: _,
-            arguments,
-        } = self;
-        let names = names.join("/");
-        let description = if description.is_empty() {
-            "".to_string()
-        } else {
-            let s = format!(" # {description}");
-            if color {
-                s.dimmed().to_string()
-            } else {
-                s
-            }
-        };
-        let arguments: Vec<String> = arguments
+    pub fn summarize_definition(&self, color: bool) -> (String, usize) {
+        let names = self.names.join("/");
+        let mut def_len = names.len();
+
+        let arguments: Vec<String> = self
+            .arguments
             .iter()
-            .map(|arg| arg.summary(color))
+            .map(|arg| {
+                let (arg_name, arg_len) = arg.summarize(color);
+                def_len += arg_len + 1; // +1 for the space
+                arg_name
+            })
             .collect();
         let arguments = if arguments.is_empty() {
             String::new()
         } else {
             format!(" {}", arguments.join(" "))
         };
-        format!("{names}{arguments}{description}")
+        (format!("{names}{arguments}"), def_len)
     }
 }
 
