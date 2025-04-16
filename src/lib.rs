@@ -62,7 +62,8 @@ impl Config {
             .collect();
         let max_def_len = pack.iter().map(|(_, len, _)| *len).max().unwrap_or(0);
 
-        let recipes = pack.into_iter()
+        let recipes = pack
+            .into_iter()
             .map(|(def, def_len, description)| {
                 // Calculate required padding
                 let padding = max_def_len.saturating_sub(def_len);
@@ -170,12 +171,16 @@ impl Recipe {
     }
 
     /// Summarizes the recipe definition, returning a string representation and the length.
-    ///
-    /// Note that the length will be one more than the actual display length of the string, as it counted an extra space.
     #[must_use]
     pub fn summarize_definition(&self, color: bool) -> (String, usize) {
-        let names = self.names.join("/");
-        let mut def_len = names.len();
+        let sep = if color {
+            "/".dimmed().to_string()
+        } else {
+            "/".to_string()
+        };
+        let names = self.names.join(&sep);
+        let mut def_len = self.names.iter().map(|name| name.len() + 1).sum();
+        def_len -= 2; // One for the extra separator and one for the extra space
 
         let arguments: Vec<String> = self
             .arguments

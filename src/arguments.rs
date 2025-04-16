@@ -50,7 +50,7 @@ impl ArgumentDefinition {
         };
         let len = self.name.len() + symbol.len();
         let summary = if color {
-            format!("{}{}", symbol, self.name.cyan())
+            format!("{}{}", symbol.magenta(), self.name.cyan())
         } else {
             format!("{}{}", symbol, self.name)
         };
