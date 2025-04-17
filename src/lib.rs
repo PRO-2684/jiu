@@ -230,7 +230,7 @@ impl<'de> Deserialize<'de> for Component {
         match InnerRepr::deserialize(deserializer)? {
             InnerRepr::Array(mut array) => {
                 // Only accept arrays of length 1
-                let content = array
+                let placeholder = array
                     .pop()
                     .ok_or_else(|| Error::custom("Expected a single argument, but got none"))?;
                 if !array.is_empty() {
@@ -240,12 +240,14 @@ impl<'de> Deserialize<'de> for Component {
                 }
 
                 // Parse the content as an environment variable (if starts with $)
-                if content.starts_with('$') {
-                    return Ok(Self::EnvVar(content[1..].to_string()));
+                if placeholder.starts_with('$') {
+                    let mut var_name = placeholder;
+                    var_name.remove(0); // Remove the leading $
+                    return Ok(Self::EnvVar(var_name));
                 }
 
                 // Parse the content as an argument
-                let arg = ArgumentDefinition::from_string::<D>(content)?;
+                let arg = ArgumentDefinition::from_string::<D>(placeholder)?;
                 Ok(Self::Argument(arg))
             }
             InnerRepr::Literal(literal) => Ok(Self::Literal(literal)),
