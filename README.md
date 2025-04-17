@@ -104,7 +104,11 @@ Where "should" means that it is a good practice to follow, but not explicitly en
 
 #### Arguments
 
-The `arguments` field is a list of arguments that the recipe accepts. It should be a list of strings, where each string represents an argument. An argument is made up of an optional leading symbol and a name. The leading symbol can be one of the following:
+The `arguments` field is a list of arguments that the recipe accepts. It should be a list of strings, where each string represents an argument. An argument is made up of an optional leading symbol and a name.
+
+##### Types
+
+The type of the argument is determined by the leading symbol, which can be one of the following:
 
 - `*`: A variadic argument. This means that the argument can accept zero or more values.
 - `+`: A required variadic argument. This means that the argument must accept one or more values.
@@ -112,23 +116,10 @@ The `arguments` field is a list of arguments that the recipe accepts. It should 
 
 If the leading symbol is omitted, the argument is treated as a required argument.
 
-#### Command
-
-The `command` field is a list representing the command to run, and  is made up of strings and arrays of length 1. Each string is treated as a literal, while each array is treated as a placeholder.
-
-The placeholders are interpolated with concrete values when the recipe is run. After interpolation, the command is executed in the directory of the config file.
-
-A placeholder can be one of the following:
-
-- `$VAR`: An environment variable. This will be replaced with the value of the environment variable `VAR`.
-    - If the variable is not set, an error will be returned.
-    - If the variable is empty, it will still be passed as an empty argument.
-- Others: An argument. This will be replaced with the value of the argument. If the argument is variadic, it will be replaced with all values of the argument.
-
-#### Greedy Matching
+##### Greedy Matching
 
 > [!NOTE]
-> This behavior may be changed in the future, but for now, it is a known limitation.
+> This behavior may be changed in the future.
 
 The `*` and `+` arguments are greedy, meaning that they will consume all remaining arguments. For example, if you have a recipe with the following arguments:
 
@@ -151,6 +142,19 @@ arguments = ["?arg0", "arg1"]
 ```
 
 When a single argument is passed, `?arg0` will consume it, leaving `arg1` empty. So this will also cause an error.
+
+#### Command
+
+The `command` field is a list representing the command to run, and  is made up of strings and arrays of length 1. Each string is treated as a literal, while each array is treated as a placeholder.
+
+The placeholders are interpolated with concrete values when the recipe is run. After interpolation, the command is executed in the directory of the config file.
+
+A placeholder can be one of the following:
+
+- `$VAR`: An environment variable. This will be replaced with the value of the environment variable `VAR`.
+    - If the variable is not set, an error will be returned.
+    - If the variable is empty, it will still be passed as an empty argument.
+- Others: An argument. This will be replaced with the value of the argument. If the argument is variadic, it will be replaced with all values of the argument.
 
 ### Running
 
