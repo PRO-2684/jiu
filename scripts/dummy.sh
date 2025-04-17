@@ -1,9 +1,9 @@
 #!/bin/bash
 
-echo "Arg#1: $1"
+echo "TERM = $1"
 
 shift
-echo "The rest:"
+echo "Arguments:"
 for arg in "$@"; do
   echo "$arg"
 done

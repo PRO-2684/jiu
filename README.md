@@ -55,8 +55,9 @@ jiu dummy 1 "2" '"3"' " 4" "" "5 6"
 Which will invoke [`dummy.sh`](./scripts/dummy.sh), printing arguments it received:
 
 ```shell
-Arg#1: 1
-The rest:
+TERM = xterm-256color
+Arguments:
+1
 2
 "3"
  4
@@ -82,13 +83,21 @@ default = "run" # Default recipe to run when invoked without any arguments (Opti
 # - Default recipe must be able to accept no arguments
 
 [[recipes]]
-names = ["run", "r"] # Names of the recipe (Required, must contain at least one name and each name should be unique across all recipes)
+names = ["run", "r"] # Names of the recipe (Required)
+# - Should contain at least one name, otherwise the recipe will never be matched
+# - Each name should be unique across all recipes, otherwise the first one will be matched
+# - Names are case-sensitive and should NOT:
+#   - Contain spaces
+#   - Start with special characters, especially `-` (which would be interpreted as an option)
 description = "Compile and run" # Description of the recipe (Optional)
 arguments = ["*rest"] # Arguments to the recipe (Optional)
 command = ["cargo", "run", "--", ["*rest"]] # Command to run (Required)
+# - Use `["$VAR"]` to interpolate environment variables (will error if not set, and will pass empty argument if set to empty)
 
 # ...More recipes
 ```
+
+Where "should" means that it is a good practice to follow, but not explicitly enforced. For example, you can have a recipe with the name `my recipe`, but to call it you would have to escape the space or use quotes, which would be inconvenient.
 
 #### Arguments
 
@@ -151,12 +160,18 @@ Which would provide additional information for debugging purposes.
 
 ## ✅ TODO
 
-- `env` field on recipes and global
-- Interpreting environment variables in commands (`["$VAR"]`)
-- Set working directories
-    - Where the config file is located (default)
-    - Where the command is invoked
-    - Custom working directory, relative to the config file
+- [ ] `env` field on recipes and global
+- [ ] Set working directories
+    - [ ] Where the config file is located (default)
+    - [ ] Where the command is invoked
+    - [ ] Custom working directory, relative to the config file
+- [ ] Options
+    - [ ] Only allow recipe names starting with letters (or valid identifiers in Rust?)
+    - [ ] `jiu -l`/`jiu --list`: List recipes
+    - [ ] `jiu -h`/`jiu --help`: Help message
+    - [ ] `jiu -v`/`jiu --version`: Version
+    - [ ] Color control? Verbosity?
+- [x] Interpolating environment variables in commands (`["$VAR"]`)
 
 ## 🎉 Credits
 

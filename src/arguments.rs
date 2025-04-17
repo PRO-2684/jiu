@@ -2,7 +2,7 @@
 
 use anyhow::{Result, bail};
 use owo_colors::OwoColorize;
-use serde::Deserialize;
+use serde::{Deserialize, de::Error};
 use std::{collections::VecDeque, fmt::Display};
 
 /// A recipe argument defined the configuration file.
@@ -20,11 +20,21 @@ impl<'de> Deserialize<'de> for ArgumentDefinition {
         D: serde::Deserializer<'de>,
     {
         // Take a string and parse it into an Argument
-        let mut name: String = String::deserialize(deserializer)?;
-        let first = name
+        let arg = String::deserialize(deserializer)?;
+        Self::from_string::<D>(arg)
+    }
+}
+
+impl ArgumentDefinition {
+    /// Creates a new argument definition from a string.
+    pub fn from_string<'de, D>(mut arg: String) -> std::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        let first = arg
             .chars()
             .next()
-            .ok_or_else(|| serde::de::Error::custom("Empty argument"))?;
+            .ok_or_else(|| Error::custom("Empty argument"))?;
         let arg_type = match first {
             '?' => ArgumentType::Optional,
             '*' => ArgumentType::Variadic,
@@ -32,14 +42,14 @@ impl<'de> Deserialize<'de> for ArgumentDefinition {
             _ => ArgumentType::Required,
         };
         if arg_type != ArgumentType::Required {
-            name.remove(0); // Remove the leading symbol
+            arg.remove(0); // Remove the leading symbol
         }
 
-        Ok(Self { name, arg_type })
+        Ok(Self {
+            name: arg,
+            arg_type,
+        })
     }
-}
-
-impl ArgumentDefinition {
     /// Summarizes the argument, returning a string representation and the length.
     pub fn summarize(&self, color: bool) -> (String, usize) {
         let symbol = match self.arg_type {

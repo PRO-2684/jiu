@@ -28,4 +28,4 @@ command = ["./scripts/version.sh", ["?version"]]
 names = ["dummy"]
 description = "Dummy recipe that prints arguments"
 arguments = ["first", "*rest"]
-command = ["./scripts/dummy.sh", ["first"], ["*rest"]]
+command = ["./scripts/dummy.sh", ["$TERM"], ["first"], ["*rest"]]

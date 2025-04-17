@@ -10,7 +10,7 @@ mod arguments;
 use anyhow::{Context, Result, bail};
 use arguments::{ArgumentDefinition, ResolvedArgument};
 use owo_colors::OwoColorize;
-use serde::Deserialize;
+use serde::{Deserialize, de::Error};
 use std::collections::{HashMap, VecDeque};
 
 /// The configuration.
@@ -101,7 +101,7 @@ pub struct Recipe {
     #[serde(default)]
     arguments: Vec<ArgumentDefinition>,
     /// Command to run.
-    command: Vec<LitOrArg>,
+    command: Vec<Component>,
 }
 
 impl Recipe {
@@ -131,8 +131,8 @@ impl Recipe {
         let mut resolved_command = Vec::new();
         for component in command {
             match component {
-                LitOrArg::Literal(literal) => resolved_command.push(literal),
-                LitOrArg::Argument(ref_arg) => {
+                Component::Literal(literal) => resolved_command.push(literal),
+                Component::Argument(ref_arg) => {
                     let Some(resolved_arg) = resolved_args.get(&ref_arg.name) else {
                         bail!("Argument {} not found", ref_arg.name);
                     };
@@ -158,6 +158,10 @@ impl Recipe {
                             }
                         }
                     }
+                }
+                Component::EnvVar(var_name) => {
+                    let value = std::env::var(&var_name)?;
+                    resolved_command.push(value);
                 }
             }
         }
@@ -200,16 +204,18 @@ impl Recipe {
     }
 }
 
-/// A string literal or an argument.
+/// A component of a command.
 #[derive(Debug, Clone, PartialEq, Eq)]
-enum LitOrArg {
+enum Component {
     /// A string literal.
     Literal(String),
     /// An argument.
     Argument(ArgumentDefinition),
+    /// An environment variable.
+    EnvVar(String),
 }
 
-impl<'de> Deserialize<'de> for LitOrArg {
+impl<'de> Deserialize<'de> for Component {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
         D: serde::Deserializer<'de>,
@@ -218,22 +224,28 @@ impl<'de> Deserialize<'de> for LitOrArg {
         #[serde(untagged)]
         enum InnerRepr {
             Literal(String),
-            Arguments(Vec<ArgumentDefinition>),
+            Array(Vec<String>),
         }
 
         match InnerRepr::deserialize(deserializer)? {
-            InnerRepr::Arguments(mut args) => {
+            InnerRepr::Array(mut array) => {
                 // Only accept arrays of length 1
-                let Some(arg) = args.pop() else {
-                    return Err(serde::de::Error::custom(
-                        "Expected a single argument, but got none",
-                    ));
-                };
-                if !args.is_empty() {
-                    return Err(serde::de::Error::custom(
+                let content = array
+                    .pop()
+                    .ok_or_else(|| Error::custom("Expected a single argument, but got none"))?;
+                if !array.is_empty() {
+                    return Err(Error::custom(
                         "Expected a single argument, but got multiple",
                     ));
                 }
+
+                // Parse the content as an environment variable (if starts with $)
+                if content.starts_with('$') {
+                    return Ok(Self::EnvVar(content[1..].to_string()));
+                }
+
+                // Parse the content as an argument
+                let arg = ArgumentDefinition::from_string::<D>(content)?;
                 Ok(Self::Argument(arg))
             }
             InnerRepr::Literal(literal) => Ok(Self::Literal(literal)),
@@ -279,23 +291,23 @@ mod tests {
         assert_eq!(recipe.arguments[3].arg_type, ArgumentType::RequiredVariadic);
 
         assert_eq!(recipe.command.len(), 6);
-        assert_eq!(recipe.command[0], LitOrArg::Literal("echo".to_string()));
-        assert_eq!(recipe.command[1], LitOrArg::Literal("Hello".to_string()));
+        assert_eq!(recipe.command[0], Component::Literal("echo".to_string()));
+        assert_eq!(recipe.command[1], Component::Literal("Hello".to_string()));
         assert_eq!(
             recipe.command[2],
-            LitOrArg::Argument(recipe.arguments[0].clone())
+            Component::Argument(recipe.arguments[0].clone())
         );
         assert_eq!(
             recipe.command[3],
-            LitOrArg::Argument(recipe.arguments[1].clone())
+            Component::Argument(recipe.arguments[1].clone())
         );
         assert_eq!(
             recipe.command[4],
-            LitOrArg::Argument(recipe.arguments[2].clone())
+            Component::Argument(recipe.arguments[2].clone())
         );
         assert_eq!(
             recipe.command[5],
-            LitOrArg::Argument(recipe.arguments[3].clone())
+            Component::Argument(recipe.arguments[3].clone())
         );
     }
 }
