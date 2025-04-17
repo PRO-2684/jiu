@@ -84,18 +84,21 @@ default = "run" # Default recipe to run when invoked without any arguments (Opti
 
 [[recipes]]
 names = ["run", "r"] # Names of the recipe (Required)
-# - Should contain at least one name, otherwise the recipe will never be matched
-# - Each name should be unique across all recipes, otherwise the first one will be matched
-# - Names are case-sensitive and should NOT:
-#   - Contain spaces
-#   - Start with special characters, especially `-` (which would be interpreted as an option)
 description = "Compile and run" # Description of the recipe (Optional)
 arguments = ["*rest"] # Arguments to the recipe (Optional)
 command = ["cargo", "run", "--", ["*rest"]] # Command to run (Required)
-# - Use `["$VAR"]` to interpolate environment variables (will error if not set, and will pass empty argument if set to empty)
 
 # ...More recipes
 ```
+
+#### Names
+
+The `names` field is a list of names that the recipe can be called with. It should contain at least one name, otherwise the recipe will never be matched. Each name:
+
+- Should be unique across all recipes, otherwise only the first one will be matched.
+- Should not contain spaces.
+- Should not start with special characters, especially `-`, which would be interpreted as an option.
+- Should not be empty.
 
 Where "should" means that it is a good practice to follow, but not explicitly enforced. For example, you can have a recipe with the name `my recipe`, but to call it you would have to escape the space or use quotes, which would be inconvenient.
 
@@ -111,7 +114,16 @@ If the leading symbol is omitted, the argument is treated as a required argument
 
 #### Command
 
-The `command` field is a list made up of strings and arrays that represents the command to run. Each string is treated as a literal string, while each array is treated as a placeholder for the arguments. The placeholders are replaced with the values of the arguments when the command is run. After the arguments are resolved, the command is executed in the directory of the config file.
+The `command` field is a list representing the command to run, and  is made up of strings and arrays of length 1. Each string is treated as a literal, while each array is treated as a placeholder.
+
+The placeholders are interpolated with concrete values when the recipe is run. After interpolation, the command is executed in the directory of the config file.
+
+A placeholder can be one of the following:
+
+- `$VAR`: An environment variable. This will be replaced with the value of the environment variable `VAR`.
+    - If the variable is not set, an error will be returned.
+    - If the variable is empty, it will still be passed as an empty argument.
+- Others: An argument. This will be replaced with the value of the argument. If the argument is variadic, it will be replaced with all values of the argument.
 
 #### Greedy Matching
 
