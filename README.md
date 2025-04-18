@@ -181,12 +181,10 @@ Which would provide additional information for debugging purposes.
     - [ ] Where the config file is located (default)
     - [ ] Where the command is invoked
     - [ ] Custom working directory, relative to the config file
-- [ ] Options
-    - [ ] Only allow recipe names starting with letters (or valid identifiers in Rust?)
-    - [ ] `jiu -l`/`jiu --list`: List recipes
-    - [ ] `jiu -h`/`jiu --help`: Help message
-    - [ ] `jiu -v`/`jiu --version`: Version
-    - [ ] Color control? Verbosity?
+- [x] Options
+    - [x] `jiu -l`/`jiu --list`: List recipes
+    - [x] `jiu -h`/`jiu --help`: Help message
+    - [x] `jiu -v`/`jiu --version`: Version
 - [x] Interpolating environment variables in commands (`["$VAR"]`)
 
 ## 🎉 Credits

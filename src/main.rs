@@ -1,6 +1,6 @@
 #![warn(clippy::all, clippy::nursery, clippy::pedantic, clippy::cargo)]
 
-use anyhow::{Context, Result, bail};
+use anyhow::{Context, Ok, Result, bail};
 use jiu::Config;
 use std::{collections::VecDeque, env, fs};
 use supports_color::Stream;
@@ -18,18 +18,29 @@ fn main() -> Result<()> {
     // Collecting arguments
     let mut iter = env::args();
     let program_name = iter.next().unwrap_or_else(|| "jiu".to_string());
-    let recipe_name = iter.next();
-    let recipe_name = recipe_name.as_ref().unwrap_or(&config.default);
-    let args: VecDeque<String> = iter.collect();
+    let mut args: VecDeque<String> = iter.collect();
+
+    // Resolving actions
+    let action = resolve_actions(&mut args, &config.default)?;
+    let recipe_name = match action {
+        Action::Help => {
+            help(&program_name);
+            return Ok(());
+        }
+        Action::Version => {
+            println!("{}@{}", env!("CARGO_PKG_NAME"), env!("CARGO_PKG_VERSION"));
+            return Ok(());
+        }
+        Action::List => {
+            println!("{}", config.summarize(color));
+            return Ok(());
+        }
+        Action::Recipe(name) => name,
+    };
+
     if debug {
         eprintln!("I am \"{program_name}\" running recipe \"{recipe_name}\"");
         eprintln!("Received recipe arguments: {args:?}");
-    }
-
-    // Listing recipies if the name is empty
-    if recipe_name.is_empty() {
-        println!("{}", config.summarize(color));
-        return Ok(());
     }
 
     // Finding the recipe
@@ -61,6 +72,18 @@ fn main() -> Result<()> {
         eprintln!("Command exited with {status}");
     }
     std::process::exit(status.code().unwrap_or(1));
+}
+
+/// Possible types of actions.
+enum Action {
+    /// Display help message.
+    Help,
+    /// Display version information.
+    Version,
+    /// List all available recipes.
+    List,
+    /// Execute the recipe.
+    Recipe(String),
 }
 
 /// Locate config file in the current directory and its parents. To be specific:
@@ -98,4 +121,40 @@ fn locate_config_file(debug: bool) -> Result<Config> {
         }
     }
     bail!("No config file found")
+}
+
+/// Resolve proper action from the command line arguments.
+fn resolve_actions(args: &mut VecDeque<String>, default: &String) -> Result<Action> {
+    let first = args.pop_front();
+    let first = first.as_ref().unwrap_or(default);
+    let action = match first.as_str() {
+        "--help" | "-h" => Action::Help,
+        "--version" | "-v" => Action::Version,
+        "" | "--list" | "-l" => Action::List,
+        _ => {
+            if first.starts_with('-') {
+                bail!("Unknown option \"{first}\"");
+            }
+            Action::Recipe(first.to_string())
+        }
+    };
+
+    Ok(action)
+}
+
+/// Print help message.
+fn help(program_name: &str) {
+    println!("Usage: {program_name} [OPTION_OR_RECIPE] [ARGS]");
+    println!();
+    println!(
+        "{}: {}",
+        env!("CARGO_PKG_NAME"),
+        env!("CARGO_PKG_DESCRIPTION")
+    );
+    println!();
+    println!("Options:");
+    println!("  -h, --help       Show this help message");
+    println!("  -v, --version    Show version information");
+    println!("  -l, --list       List all available recipes");
+    println!();
 }
