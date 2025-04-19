@@ -75,12 +75,7 @@ The config file is a simple TOML file named `.jiu.toml`. The format is as follow
 
 ```toml
 description = "`jiu`: A minimal command runner." # Description of the configuration (Optional)
-# - Will be displayed when listing recipes
-# - To add some colors to the dull description, use ANSI escape codes like:
-#   description = "\u001b[1;36mjiu\u001b[22;39m: A minimal command runner."
 default = "run" # Default recipe to run when invoked without any arguments (Optional)
-# - List all recipes if empty
-# - Default recipe must be able to accept no arguments
 
 [[recipes]]
 names = ["run", "r"] # Names of the recipe (Required)
@@ -90,6 +85,22 @@ command = ["cargo", "run", "--", ["*rest"]] # Command to run (Required)
 
 # ...More recipes
 ```
+
+#### Description
+
+The `description` field is a string that describes the configuration. It is optional, but it is a good practice to include it. The description will be displayed when listing recipes. To add some colors to the dull description, use ANSI escape codes like:
+
+```toml
+description = "\u001b[1;36mjiu\u001b[22;39m: A minimal command runner."
+```
+
+#### Default
+
+The `default` field is a string that specifies the default recipe to run when no arguments are provided. It is optional, defaulting to empty string.
+
+- If it is empty, `jiu` will list all recipes.
+- The default recipe must be able to accept no arguments.
+- If the default recipe is not found, an error will be returned.
 
 #### Names
 
