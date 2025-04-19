@@ -12,17 +12,14 @@ fn main() -> Result<()> {
         .unwrap_or(false);
     let debug = env::var("JIU_DEBUG").is_ok();
 
-    // Locating and parsing config file
-    let config = locate_config_file(debug)?;
-
     // Collecting arguments
     let mut iter = env::args();
     let program_name = iter.next().unwrap_or_else(|| "jiu".to_string());
     let mut args: VecDeque<String> = iter.collect();
 
     // Resolving actions
-    let action = resolve_actions(&mut args, &config.default)?;
-    let recipe_name = match action {
+    let action = resolve_actions(&mut args)?;
+    let (config, recipe_name) = match action {
         Action::Help => {
             help(&program_name);
             return Ok(());
@@ -32,10 +29,23 @@ fn main() -> Result<()> {
             return Ok(());
         }
         Action::List => {
+            let config = locate_config_file(debug)?;
             println!("{}", config.summarize(color));
             return Ok(());
         }
-        Action::Recipe(name) => name,
+        Action::Default => {
+            let config = locate_config_file(debug)?;
+            if config.default.is_empty() {
+                println!("{}", config.summarize(color));
+                return Ok(());
+            }
+            let default = config.default.clone();
+            (config, default)
+        }
+        Action::Recipe(name) => {
+            let config = locate_config_file(debug)?;
+            (config, name)
+        },
     };
 
     if debug {
@@ -75,6 +85,7 @@ fn main() -> Result<()> {
 }
 
 /// Possible types of actions.
+#[derive(Debug)]
 enum Action {
     /// Display help message.
     Help,
@@ -82,7 +93,9 @@ enum Action {
     Version,
     /// List all available recipes.
     List,
-    /// Execute the recipe.
+    /// Execute the default recipe.
+    Default,
+    /// Execute a recipe.
     Recipe(String),
 }
 
@@ -124,13 +137,15 @@ fn locate_config_file(debug: bool) -> Result<Config> {
 }
 
 /// Resolve proper action from the command line arguments.
-fn resolve_actions(args: &mut VecDeque<String>, default: &String) -> Result<Action> {
+fn resolve_actions(args: &mut VecDeque<String>) -> Result<Action> {
     let first = args.pop_front();
-    let first = first.as_ref().unwrap_or(default);
+    let Some(first) = first.as_ref() else {
+        return Ok(Action::Default);
+    };
     let action = match first.as_str() {
         "--help" | "-h" => Action::Help,
         "--version" | "-v" => Action::Version,
-        "" | "--list" | "-l" => Action::List,
+        "--list" | "-l" => Action::List,
         _ => {
             if first.starts_with('-') {
                 bail!("Unknown option \"{first}\"");
