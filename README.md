@@ -169,34 +169,37 @@ A placeholder can be one of the following:
 
 ### Running
 
-To run a recipe, simply call `jiu` with the name of the recipe and arguments for the recipe:
-
 ```shell
-jiu <recipe> [<args>...]
+$ jiu -h
+Usage: jiu [OPTION_OR_RECIPE] [ARGS]...
+
+jiu: A minimal command runner.
+
+Options:
+  -h, --help       Show this help message
+  -v, --version    Show version information
+  -l, --list       List all available recipes
 ```
+
+If no option or recipe is specified, `jiu` will run the default recipe, listing all recipes if not specified.
 
 ### Debugging
 
 Run with environment variable `JIU_DEBUG` set to enable debug mode. In bash, you can do this with:
 
 ```shell
-JIU_DEBUG=1 jiu <recipe> [<args>...]
+JIU_DEBUG=1 jiu [OPTION_OR_RECIPE] [ARGS]...
 ```
 
 Which would provide additional information for debugging purposes.
 
 ## ✅ TODO
 
-- [ ] `env` field on recipes and global
-- [ ] Set working directories
-    - [ ] Where the config file is located (default)
-    - [ ] Where the command is invoked
-    - [ ] Custom working directory, relative to the config file
-- [x] Options
-    - [x] `jiu -l`/`jiu --list`: List recipes
-    - [x] `jiu -h`/`jiu --help`: Help message
-    - [x] `jiu -v`/`jiu --version`: Version
-- [x] Interpolating environment variables in commands (`["$VAR"]`)
+- `env` field on recipes and global
+- Set working directories
+    - Where the config file is located (default)
+    - Where the command is invoked
+    - Custom working directory, relative to the config file
 
 ## 🎉 Credits
 

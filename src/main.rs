@@ -25,7 +25,7 @@ fn main() -> Result<()> {
             return Ok(());
         }
         Action::Version => {
-            println!("{}@{}", env!("CARGO_PKG_NAME"), env!("CARGO_PKG_VERSION"));
+            version();
             return Ok(());
         }
         Action::List => {
@@ -45,7 +45,7 @@ fn main() -> Result<()> {
         Action::Recipe(name) => {
             let config = locate_config_file(debug)?;
             (config, name)
-        },
+        }
     };
 
     if debug {
@@ -157,19 +157,24 @@ fn resolve_actions(args: &mut VecDeque<String>) -> Result<Action> {
     Ok(action)
 }
 
-/// Print help message.
+/// Show help message.
 fn help(program_name: &str) {
-    println!("Usage: {program_name} [OPTION_OR_RECIPE] [ARGS]");
-    println!();
     println!(
         "{}: {}",
         env!("CARGO_PKG_NAME"),
         env!("CARGO_PKG_DESCRIPTION")
     );
     println!();
+    println!("Usage: {program_name} [OPTION_OR_RECIPE] [ARGS]...");
+    println!();
     println!("Options:");
     println!("  -h, --help       Show this help message");
     println!("  -v, --version    Show version information");
     println!("  -l, --list       List all available recipes");
     println!();
+}
+
+/// Show version information.
+fn version() {
+    println!("{}@{}", env!("CARGO_PKG_NAME"), env!("CARGO_PKG_VERSION"));
 }
