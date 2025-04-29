@@ -6,12 +6,16 @@
 #![warn(clippy::all, clippy::nursery, clippy::pedantic, clippy::cargo)]
 
 mod arguments;
+#[cfg(feature = "cli")]
+mod cli;
 
 use anyhow::{Context, Result, bail};
 use arguments::{ArgumentDefinition, ResolvedArgument};
 use owo_colors::OwoColorize;
 use serde::{Deserialize, de::Error};
 use std::collections::{HashMap, VecDeque};
+#[cfg(feature = "cli")]
+pub use cli::Action;
 
 /// The configuration.
 #[derive(Deserialize, Debug)]

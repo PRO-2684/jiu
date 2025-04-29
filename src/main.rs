@@ -1,7 +1,7 @@
 #![warn(clippy::all, clippy::nursery, clippy::pedantic, clippy::cargo)]
 
 use anyhow::{Context, Ok, Result, bail};
-use jiu::Config;
+use jiu::{Action, Config};
 use std::{collections::VecDeque, env, fs};
 use supports_color::Stream;
 
@@ -18,7 +18,7 @@ fn main() -> Result<()> {
     let mut args: VecDeque<String> = iter.collect();
 
     // Resolving actions
-    let action = resolve_actions(&mut args)?;
+    let action = Action::parse(&mut args)?;
     let (config, recipe_name) = match action {
         Action::Help => {
             help(&program_name);
@@ -84,21 +84,6 @@ fn main() -> Result<()> {
     std::process::exit(status.code().unwrap_or(1));
 }
 
-/// Possible types of actions.
-#[derive(Debug)]
-enum Action {
-    /// Display help message.
-    Help,
-    /// Display version information.
-    Version,
-    /// List all available recipes.
-    List,
-    /// Execute the default recipe.
-    Default,
-    /// Execute a recipe.
-    Recipe(String),
-}
-
 /// Locate config file in the current directory and its parents. To be specific:
 ///
 /// 1. Find the closest parent directory that contains a `.jiu.toml` file.
@@ -134,27 +119,6 @@ fn locate_config_file(debug: bool) -> Result<Config> {
         }
     }
     bail!("No config file found")
-}
-
-/// Resolve proper action from the command line arguments.
-fn resolve_actions(args: &mut VecDeque<String>) -> Result<Action> {
-    let first = args.pop_front();
-    let Some(first) = first.as_ref() else {
-        return Ok(Action::Default);
-    };
-    let action = match first.as_str() {
-        "--help" | "-h" => Action::Help,
-        "--version" | "-v" => Action::Version,
-        "--list" | "-l" => Action::List,
-        _ => {
-            if first.starts_with('-') {
-                bail!("Unknown option \"{first}\"");
-            }
-            Action::Recipe(first.to_string())
-        }
-    };
-
-    Ok(action)
 }
 
 /// Show help message.
