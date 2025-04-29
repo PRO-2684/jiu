@@ -88,7 +88,7 @@ command = ["cargo", "run", "--", ["*rest"]] # Command to run (Required)
 
 #### Description
 
-The `description` field is a string that describes the configuration. It is optional, but it is a good practice to include it. The description will be displayed when listing recipes. To add some colors to the dull description, use ANSI escape codes like:
+The `description` field is a string that describes the recipe or the entire configuration. It is optional, but it is a good practice to include it. The description will be displayed when listing recipes. To add some colors to the dull description, use ANSI escape codes like:
 
 ```toml
 description = "\u001b[1;36mjiu\u001b[22;39m: A minimal command runner."
@@ -196,6 +196,12 @@ Which would provide additional information for debugging purposes.
 ## ✅ TODO
 
 - `env` field on recipes and global
+- Migrate to use `clap` to parse arguments
+- Shell completion
+    - Options
+    - Recipes
+    - Arguments (delegate/pass-through to shell)
+    - Should be relatively easy after [clap#5424](https://github.com/clap-rs/clap/issues/5424) and [clap#3166](https://github.com/clap-rs/clap/issues/3166) got implemented
 - Set working directories
     - Where the config file is located (default)
     - Where the command is invoked

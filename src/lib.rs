@@ -11,11 +11,11 @@ mod cli;
 
 use anyhow::{Context, Result, bail};
 use arguments::{ArgumentDefinition, ResolvedArgument};
+#[cfg(feature = "cli")]
+pub use cli::Action;
 use owo_colors::OwoColorize;
 use serde::{Deserialize, de::Error};
 use std::collections::{HashMap, VecDeque};
-#[cfg(feature = "cli")]
-pub use cli::Action;
 
 /// The configuration.
 #[derive(Deserialize, Debug)]

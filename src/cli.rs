@@ -1,6 +1,7 @@
-use std::collections::VecDeque;
+//! Module for parsing command line arguments.
 
-use anyhow::{bail, Result};
+use anyhow::{Result, bail};
+use std::collections::VecDeque;
 
 /// Possible types of actions.
 #[derive(Debug)]
