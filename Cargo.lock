@@ -9,6 +9,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b0674a1ddeecb70197781e945de4b3b8ffb61fa939a5597bcf48503737663100"
 
 [[package]]
+name = "completers"
+version = "0.0.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "118ed8f46549dce188e0bfb52a608908b8d4284b5b81bd6522a7d9a4cd537c77"
+
+[[package]]
 name = "is_ci"
 version = "1.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -19,6 +25,7 @@ name = "jiu"
 version = "0.1.4"
 dependencies = [
  "anyhow",
+ "completers",
  "owo-colors",
  "serde",
  "supports-color",

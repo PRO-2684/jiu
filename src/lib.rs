@@ -12,7 +12,7 @@ mod cli;
 use anyhow::{Context, Result, bail};
 use arguments::{ArgumentDefinition, ResolvedArgument};
 #[cfg(feature = "cli")]
-pub use cli::Action;
+pub use cli::{Action, handle_completion, locate_config_file};
 use owo_colors::OwoColorize;
 use serde::{Deserialize, de::Error};
 use std::collections::{HashMap, VecDeque};

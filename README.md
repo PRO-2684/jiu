@@ -18,6 +18,7 @@ This tool is heavily inspired by [`just`](https://github.com/casey/just/), but i
     - `just` could cause argument splitting issues
     - Although [there are workarounds](https://just.systems/man/en/avoiding-argument-splitting.html), corner cases still exist
 - Pro: Is independent of shell
+- Pro: Provides shell completion and delegation support (WIP)
 - Con: But at the cost of much less customization and features
 
 ## 📥 Installation
@@ -167,6 +168,16 @@ A placeholder can be one of the following:
     - If the variable is empty, it will still be passed as an empty argument.
 - Others: An argument. This will be replaced with the value of the argument. If the argument is variadic, it will be replaced with all values of the argument.
 
+### Shell Completion
+
+> [!NOTE]
+> This is a WIP.
+
+```bash
+mkdir -p ~/.local/share/bash-completion/completions # Create the directory if it doesn't exist
+echo 'source <(COMPLETE=bash jiu)' > ~/.local/share/bash-completion/completions/jiu
+```
+
 ### Running
 
 ```shell
@@ -196,12 +207,9 @@ Which would provide additional information for debugging purposes.
 ## ✅ TODO
 
 - `env` field on recipes and global
-- Migrate to use `clap` to parse arguments
-- Shell completion
-    - Options
-    - Recipes
-    - Arguments (delegate/pass-through to shell)
-    - Should be relatively easy after [clap#5424](https://github.com/clap-rs/clap/issues/5424) and [clap#3166](https://github.com/clap-rs/clap/issues/3166) got implemented
+- Completion delegation
+- Migrate to `clap` for parsing arguments and completion
+    - Completion blocked on [clap#5424](https://github.com/clap-rs/clap/issues/5424) and [clap#3166](https://github.com/clap-rs/clap/issues/3166)
 - Set working directories
     - Where the config file is located (default)
     - Where the command is invoked
