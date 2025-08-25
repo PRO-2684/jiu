@@ -30,12 +30,16 @@ fn main() -> Result<()> {
             return Ok(());
         }
         Action::List => {
-            let config = locate_config_file(debug)?;
+            let Some(config) = locate_config_file(debug)? else {
+                bail!("No config file found");
+            };
             println!("{}", config.summarize(color));
             return Ok(());
         }
         Action::Default => {
-            let config = locate_config_file(debug)?;
+            let Some(config) = locate_config_file(debug)? else {
+                bail!("No config file found");
+            };
             if config.default.is_empty() {
                 println!("{}", config.summarize(color));
                 return Ok(());
@@ -44,7 +48,9 @@ fn main() -> Result<()> {
             (config, default)
         }
         Action::Recipe(name) => {
-            let config = locate_config_file(debug)?;
+            let Some(config) = locate_config_file(debug)? else {
+                bail!("No config file found");
+            };
             (config, name)
         }
     };

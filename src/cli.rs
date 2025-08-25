@@ -60,7 +60,10 @@ pub fn handle_completion(debug: bool) -> Result<()> {
                     None
                 }
             });
-            let config = locate_config_file(debug)?;
+            let Some(config) = locate_config_file(debug)? else {
+                Completion::complete(option_candidates);
+                return Ok(());
+            };
             let recipe_candidates = config.recipes.into_iter().flat_map(|recipe| {
                 recipe
                     .names
@@ -71,7 +74,10 @@ pub fn handle_completion(debug: bool) -> Result<()> {
             Completion::complete(candidates);
         }
         _ => {
-            let config = locate_config_file(debug)?;
+            let Some(config) = locate_config_file(debug)? else {
+                Completion::complete::<[&str; 0]>([]);
+                return Ok(());
+            };
             let recipe_name = &completion.words[1];
             if let Some(recipe) = config
                 .recipes
@@ -92,7 +98,7 @@ pub fn handle_completion(debug: bool) -> Result<()> {
 /// 1. Find the closest parent directory that contains a `.jiu.toml` file.
 /// 2. Deserialize the file into a [`Config`] struct.
 /// 3. Set working directory to the directory containing the config file.
-pub fn locate_config_file(debug: bool) -> Result<Config> {
+pub fn locate_config_file(debug: bool) -> Result<Option<Config>> {
     let mut path = env::current_dir()?;
     loop {
         let config_path = path.join(".jiu.toml");
@@ -115,13 +121,13 @@ pub fn locate_config_file(debug: bool) -> Result<Config> {
                 eprintln!("Set working directory to: {path:?}");
             }
 
-            return Ok(config);
+            return Ok(Some(config));
         }
         if !path.pop() {
             break;
         }
     }
-    bail!("No config file found")
+    Ok(None)
 }
 
 /// Delegates the completion request to given recipe.
