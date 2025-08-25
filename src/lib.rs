@@ -18,7 +18,7 @@ use serde::{Deserialize, de::Error};
 use std::collections::{HashMap, VecDeque};
 
 /// The configuration.
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Clone)]
 pub struct Config {
     /// Description of the configuration.
     #[serde(default)]
@@ -92,7 +92,7 @@ impl Config {
 }
 
 /// The recipe.
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Clone)]
 pub struct Recipe {
     /// Names of the recipe.
     ///
@@ -109,7 +109,7 @@ pub struct Recipe {
 }
 
 impl Recipe {
-    /// Resolves to a command with the given arguments.
+    /// Resolves to a command with the given arguments, calculating new word index.
     ///
     /// ## Errors
     ///
@@ -117,28 +117,44 @@ impl Recipe {
     /// - If a referenced argument is not defined.
     /// - If a referenced argument does not match the defined type.
     /// - If unexpected arguments are left after resolving.
-    pub fn resolve(self, mut args: VecDeque<String>) -> Result<Vec<String>> {
+    pub fn resolve(self, mut args: VecDeque<String>, mut word_index: usize) -> Result<(Vec<String>, usize)> {
         let Self {
             arguments, command, ..
         } = self;
 
         // Resolve the arguments
         let mut resolved_args = HashMap::new();
+        let mut word_offset_found = false;
         for arg in arguments {
             let resolved_arg = arg.arg_type.resolve(&mut args).with_context(|| {
                 format!("While resolving argument \"{}\"", arg.summarize(false).0)
             })?;
-            resolved_args.insert(arg.name, resolved_arg);
+            let word_offset = if word_offset_found {
+                None
+            } else if word_index >= resolved_arg.len() {
+                word_index -= resolved_arg.len();
+                None
+            } else {
+                word_offset_found = true;
+                Some(word_index)
+            };
+            resolved_args.insert(arg.name, (resolved_arg, word_offset));
         }
 
         // Resolve the command
+        let mut new_word_index = None;
         let mut resolved_command = Vec::new();
         for component in command {
             match component {
-                Component::Literal(literal) => resolved_command.push(literal),
+                Component::Literal(literal) => {
+                    resolved_command.push(literal);
+                },
                 Component::Argument(ref_arg) => {
-                    let Some(resolved_arg) = resolved_args.get(&ref_arg.name) else {
+                    let Some((resolved_arg, word_offset)) = resolved_args.get(&ref_arg.name) else {
                         bail!("Argument {} not found", ref_arg.name);
+                    };
+                    if let Some(word_offset) = word_offset {
+                        new_word_index.replace(resolved_command.len() + *word_offset);
                     };
                     if !resolved_arg.matches(&ref_arg.arg_type) {
                         bail!(
@@ -175,7 +191,8 @@ impl Recipe {
             bail!("Unexpected argument(s): {args:?}");
         }
 
-        Ok(resolved_command)
+        let new_word_index = new_word_index.unwrap_or(resolved_command.len() - 1);
+        Ok((resolved_command, new_word_index))
     }
 
     /// Summarizes the recipe definition, returning a string representation and the length.

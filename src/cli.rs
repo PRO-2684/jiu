@@ -1,9 +1,9 @@
 //! Module for parsing command line arguments.
 
-use anyhow::{bail, Context, Result};
-use std::{collections::VecDeque, env, fs};
+use super::{Config, Recipe};
+use anyhow::{Context, Result, bail};
 use completers::Completion;
-use super::Config;
+use std::{collections::VecDeque, env, fs};
 
 /// Possible types of actions.
 #[derive(Debug)]
@@ -45,39 +45,47 @@ impl Action {
 
 /// Handles completion request and exit, if any.
 pub fn handle_completion(debug: bool) -> Result<()> {
-    if let Some(completion) = Completion::init()? {
-        match completion.word_index {
-            0 => Completion::complete::<[&str; 0]>([]),
-            1 => {
-                let search = &completion.words[1];
-                let options = vec![
-                    "--help", "-h",
-                    "--version", "-v",
-                    "--list", "-l",
-                ];
-                let option_candidates = options.iter().filter_map(|option| {
-                    if option.starts_with(search) {
-                        Some(option.to_string())
-                    } else {
-                        None
-                    }
-                });
-                let config = locate_config_file(debug)?;
-                let recipe_candidates = config.recipes.into_iter().flat_map(|recipe| {
-                    recipe.names.into_iter().filter(|name| name.starts_with(search))
-                });
-                let candidates = option_candidates.chain(recipe_candidates);
-                Completion::complete(candidates);
-            },
-            _ => {
-                // TODO: Delegate
+    let Some(completion) = Completion::init()? else {
+        return Ok(());
+    };
+    match completion.word_index {
+        0 => Completion::complete::<[&str; 0]>([]),
+        1 => {
+            let search = &completion.words[1];
+            let options = vec!["--help", "-h", "--version", "-v", "--list", "-l"];
+            let option_candidates = options.iter().filter_map(|option| {
+                if option.starts_with(search) {
+                    Some(option.to_string())
+                } else {
+                    None
+                }
+            });
+            let config = locate_config_file(debug)?;
+            let recipe_candidates = config.recipes.into_iter().flat_map(|recipe| {
+                recipe
+                    .names
+                    .into_iter()
+                    .filter(|name| name.starts_with(search))
+            });
+            let candidates = option_candidates.chain(recipe_candidates);
+            Completion::complete(candidates);
+        }
+        _ => {
+            let config = locate_config_file(debug)?;
+            let recipe_name = &completion.words[1];
+            if let Some(recipe) = config
+                .recipes
+                .into_iter()
+                .find(|r| r.names.contains(&recipe_name))
+            {
+                delegate(completion, recipe)?;
+            } else {
                 Completion::complete::<[&str; 0]>([]);
-            },
+            };
         }
     }
     Ok(())
 }
-
 
 /// Locate config file in the current directory and its parents. To be specific:
 ///
@@ -116,3 +124,25 @@ pub fn locate_config_file(debug: bool) -> Result<Config> {
     bail!("No config file found")
 }
 
+/// Delegates the completion request to given recipe.
+fn delegate(mut comp: Completion, recipe: Recipe) -> Result<()> {
+    comp.words.remove(0); // Discard program name
+    let (resolved, word_index) = recipe.resolve(comp.words.into(), comp.word_index - 1)?;
+    comp.words = resolved;
+    comp.word_index = word_index;
+
+    comp.line = comp.words.join(" ");
+    comp.cursor_index = comp
+        .words
+        .iter()
+        .take(comp.word_index)
+        .map(|word| word.len())
+        .sum::<usize>()
+        + comp.word_index
+        + comp.words[comp.word_index].len();
+    // TODO: Resolve cursor index correctly, instead of assuming it at the end of current word
+    // FIXME: Proper escaping when composing `comp.line` (Although rarely does anyone use it)
+
+    comp.delegate();
+    Ok(())
+}
