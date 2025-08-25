@@ -10,9 +10,9 @@ checksum = "b0674a1ddeecb70197781e945de4b3b8ffb61fa939a5597bcf48503737663100"
 
 [[package]]
 name = "completers"
-version = "0.0.3"
+version = "0.0.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "118ed8f46549dce188e0bfb52a608908b8d4284b5b81bd6522a7d9a4cd537c77"
+checksum = "a6d06dfe14594027075dc2688aef38d9959afa70df9fb58d3ffce83d0ccf9b08"
 
 [[package]]
 name = "is_ci"
