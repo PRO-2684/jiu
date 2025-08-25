@@ -73,7 +73,8 @@ fn main() -> Result<()> {
     let word_index = args.len() - 1; // We dont't need word index here, so set to the last word
     let resolved = recipe
         .resolve(args, word_index)
-        .with_context(|| format!("Error resolving recipe \"{recipe_name}\""))?.0;
+        .with_context(|| format!("Error resolving recipe \"{recipe_name}\""))?
+        .0;
     if debug {
         eprintln!("Resolved command: {resolved:?}");
     }

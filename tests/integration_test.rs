@@ -24,7 +24,10 @@ fn test_resolve_1() {
 
     let indices = [(0, 3), (1, 2), (2, 4)];
     for (word_index, new_word_index) in indices {
-        let (resolved, real_word_index) = recipe.clone().resolve(args.clone(), word_index).expect("Failed to resolve recipe");
+        let (resolved, real_word_index) = recipe
+            .clone()
+            .resolve(args.clone(), word_index)
+            .expect("Failed to resolve recipe");
         assert_eq!(resolved, vecs!["echo", "Hello", "val1", "val0", "val2"]);
         assert_eq!(new_word_index, real_word_index);
     }
@@ -46,8 +49,14 @@ fn test_resolve_2() {
 
     let indices = [(0, 3), (1, 2), (2, 4), (3, 5)];
     for (word_index, new_word_index) in indices {
-        let (resolved, real_word_index) = recipe.clone().resolve(args.clone(), word_index).expect("Failed to resolve recipe");
-        assert_eq!(resolved, vecs!["echo", "Hello", "val1", "val0", "val2", "val3"]);
+        let (resolved, real_word_index) = recipe
+            .clone()
+            .resolve(args.clone(), word_index)
+            .expect("Failed to resolve recipe");
+        assert_eq!(
+            resolved,
+            vecs!["echo", "Hello", "val1", "val0", "val2", "val3"]
+        );
         assert_eq!(new_word_index, real_word_index);
     }
 }

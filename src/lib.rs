@@ -117,7 +117,11 @@ impl Recipe {
     /// - If a referenced argument is not defined.
     /// - If a referenced argument does not match the defined type.
     /// - If unexpected arguments are left after resolving.
-    pub fn resolve(self, mut args: VecDeque<String>, mut word_index: usize) -> Result<(Vec<String>, usize)> {
+    pub fn resolve(
+        self,
+        mut args: VecDeque<String>,
+        mut word_index: usize,
+    ) -> Result<(Vec<String>, usize)> {
         let Self {
             arguments, command, ..
         } = self;
@@ -148,14 +152,14 @@ impl Recipe {
             match component {
                 Component::Literal(literal) => {
                     resolved_command.push(literal);
-                },
+                }
                 Component::Argument(ref_arg) => {
                     let Some((resolved_arg, word_offset)) = resolved_args.get(&ref_arg.name) else {
                         bail!("Argument {} not found", ref_arg.name);
                     };
                     if let Some(word_offset) = word_offset {
                         new_word_index.replace(resolved_command.len() + *word_offset);
-                    };
+                    }
                     if !resolved_arg.matches(&ref_arg.arg_type) {
                         bail!(
                             "Argument \"{}\" defined as {} but referenced as {}",

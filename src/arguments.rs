@@ -153,10 +153,17 @@ impl ResolvedArgument {
     }
 
     /// Calculates word length.
-    pub fn len(&self) -> usize {
+    #[allow(clippy::bool_to_int_with_if, reason = "Const fn")]
+    pub const fn len(&self) -> usize {
         match self {
             Self::Required(_) => 1,
-            Self::Optional(option) => if option.is_some() { 1 } else { 0 },
+            Self::Optional(option) => {
+                if option.is_some() {
+                    1
+                } else {
+                    0
+                }
+            }
             Self::Variadic(vec) | Self::RequiredVariadic(vec) => vec.len(),
         }
     }
