@@ -87,6 +87,8 @@ command = ["cargo", "run", "--", ["*rest"]] # Command to run (Required)
 # ...More recipes
 ```
 
+When not found in the current directory, it will try to search upwards until a config file has been found, or the root directory has been reached. Then, it'll execute specified commands based on that directory.
+
 #### Description
 
 The `description` field is a string that describes the recipe or the entire configuration. It is optional, but it is a good practice to include it. The description will be displayed when listing recipes. To add some colors to the dull description, use ANSI escape codes like:
@@ -207,7 +209,6 @@ Which would provide additional information for debugging purposes.
 ## ✅ TODO
 
 - `env` field on recipes and global
-- Completion delegation
 - Migrate to `clap` for parsing arguments and completion
     - Completion blocked on [clap#5424](https://github.com/clap-rs/clap/issues/5424) and [clap#3166](https://github.com/clap-rs/clap/issues/3166)
 - Set working directories
